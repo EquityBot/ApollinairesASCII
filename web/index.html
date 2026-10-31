@@ -28,8 +28,11 @@
           <label for="seed">Random seed</label><input id="seed" type="number" min="0" max="4294967295" value="42">
         </div>
         <div id="art-fields" hidden>
+          <label for="art-search">Search by name or tag</label>
+          <input id="art-search" type="search" maxlength="40" placeholder="bird, sea, frame" aria-describedby="art-matches">
           <label for="art-name">Artwork</label>
-          <select id="art-name"><option>ghost</option><option>cat</option><option>rocket</option><option>mountain</option><option>tree</option><option>owl</option><option>heart</option><option>coffee</option><option>fish</option><option>robot</option><option>castle</option><option>flower</option></select>
+          <select id="art-name"></select>
+          <p id="art-matches"></p>
         </div>
         <div id="text-fields">
           <label for="message">Text for lettering, reveal or scroll</label>
@@ -77,6 +80,14 @@
           <button id="download-json" type="button" disabled>Save project .json</button>
           <button id="download-html" type="button" disabled>Save player .html</button>
         </div>
+        <details id="effect-panel">
+          <summary>Animate this frame with an effect</summary>
+          <p>Builds a new animation from the selected frame. Undo restores the previous project.</p>
+          <label for="effect">Effect</label><select id="effect"></select>
+          <div class="pair"><div><label for="effect-duration">Duration (milliseconds)</label><input id="effect-duration" type="number" min="100" max="60000" step="100" value="2000"></div><div><label for="effect-fps">Frames / second</label><input id="effect-fps" type="number" min="1" max="60" value="20"></div></div>
+          <label for="effect-seed">Random seed</label><input id="effect-seed" type="number" min="0" max="4294967295" value="42">
+          <div class="actions"><button id="apply-effect" class="primary" type="button" disabled>Apply effect</button></div>
+        </details>
         <details id="editor-panel">
           <summary>Edit characters and frames</summary>
           <p>Use printable ASCII and line breaks. Short rows and missing rows are padded to the project dimensions. Apply your changes before switching frames.</p>

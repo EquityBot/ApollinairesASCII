@@ -66,3 +66,145 @@ fn stdin_ascii_can_start_with_an_opening_brace() {
     );
     assert_eq!(output.stdout, b"{ a }\n");
 }
+
+fn scratch(name: &str) -> std::path::PathBuf {
+    let dir = std::env::temp_dir().join(format!("apollinaire-{name}-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    dir
+}
+fn text(bytes: &[u8]) -> &str {
+    std::str::from_utf8(bytes).unwrap()
+}
+#[test]
+fn list_searches_tags_and_effects_animate_files_and_stdin() {
+    let birds = cli(&["list", "--tag", "bird"]);
+    assert!(birds.status.success());
+    let names: Vec<_> = text(&birds.stdout)
+        .lines()
+        .map(|l| l.split(' ').next().unwrap())
+        .collect();
+    assert!(names.contains(&"duck") && names.contains(&"owl") && !names.contains(&"cat"));
+    assert!(!cli(&["list", "--tag", "no-such-tag"]).status.success());
+    assert!(text(&cli(&["list"]).stdout).contains("Effects: reveal"));
+
+    let dir = scratch("effect");
+    let art = dir.join("fox.txt");
+    assert!(
+        cli(&["art", "fox", "--output", art.to_str().unwrap()])
+            .status
+            .success()
+    );
+    let output = cli(&[
+        "effect",
+        "scatter",
+        art.to_str().unwrap(),
+        "--duration",
+        "500",
+        "--fps",
+        "10",
+    ]);
+    assert!(output.status.success(), "{}", text(&output.stderr));
+    let project = apollinaires_ascii::Animation::from_json(text(&output.stdout)).unwrap();
+    assert_eq!(project.frames().len(), 5);
+    let fox = apollinaires_ascii::art::template("fox").unwrap();
+    assert_eq!(project.frames()[4].frame, fox);
+    assert!(
+        !cli(&["effect", "sparkle", art.to_str().unwrap()])
+            .status
+            .success()
+    );
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_apollinaire"))
+        .args(["effect", "decrypt", "-", "--format", "text", "--frame", "0"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"HELLO\nFRIEND\n")
+        .unwrap();
+    let output = child.wait_with_output().unwrap();
+    assert!(output.status.success());
+    assert!(
+        output
+            .stdout
+            .iter()
+            .all(|b| *b == b'\n' || (32..=126).contains(b))
+    );
+    assert_ne!(output.stdout, b"HELLO \nFRIEND\n");
+    std::fs::remove_dir_all(dir).unwrap();
+}
+#[test]
+fn image_batches_create_one_file_per_input_and_never_overwrite() {
+    let dir = scratch("batch");
+    let picture = |name: &str| {
+        let path = dir.join(name);
+        image::DynamicImage::new_luma8(16, 8).save(&path).unwrap();
+        path.to_str().unwrap().to_string()
+    };
+    let (a, b) = (picture("a.png"), picture("b.png"));
+    std::fs::create_dir(dir.join("sub")).unwrap();
+    let nested = picture("sub/a.png");
+    let bad = dir.join("notes.png");
+    std::fs::write(&bad, "not an image").unwrap();
+    let bad = bad.to_str().unwrap();
+    let out = dir.join("out");
+    let out_arg = out.to_str().unwrap();
+
+    let first = cli(&["image", &a, &b, "--width", "8", "--output-dir", out_arg]);
+    assert!(first.status.success(), "{}", text(&first.stderr));
+    let a_text = std::fs::read(out.join("a.txt")).unwrap();
+    assert!(a_text.iter().all(|b| *b == b'\n' || (32..=126).contains(b)));
+    assert!(out.join("b.txt").exists());
+    assert_eq!(text(&first.stdout).lines().count(), 2);
+
+    std::fs::write(out.join("b.txt"), "keep this").unwrap();
+    let again = cli(&["image", &a, &b, "--width", "8", "--output-dir", out_arg]);
+    assert!(!again.status.success());
+    assert!(text(&again.stderr).contains("2 of 2 inputs failed"));
+    assert_eq!(std::fs::read(out.join("a.txt")).unwrap(), a_text);
+    assert_eq!(
+        std::fs::read_to_string(out.join("b.txt")).unwrap(),
+        "keep this"
+    );
+
+    let partial = dir.join("partial");
+    let mixed = cli(&[
+        "image",
+        bad,
+        &a,
+        "--width",
+        "8",
+        "--output-dir",
+        partial.to_str().unwrap(),
+    ]);
+    assert!(!mixed.status.success());
+    assert!(text(&mixed.stderr).contains("notes.png"));
+    assert!(partial.join("a.txt").exists() && !partial.join("notes.txt").exists());
+
+    let clash = dir.join("clash");
+    let same = cli(&[
+        "image",
+        &a,
+        &nested,
+        "--output-dir",
+        clash.to_str().unwrap(),
+    ]);
+    assert!(!same.status.success());
+    assert!(!clash.exists());
+    assert!(!cli(&["image", &a, &b]).status.success());
+    assert!(
+        !cli(&["image", "-", &a, "--output-dir", out_arg])
+            .status
+            .success()
+    );
+
+    let plain = cli(&["image", "http://127.0.0.1:9/a.png"]);
+    assert!(!plain.status.success());
+    assert!(text(&plain.stderr).contains("Only https:// URLs are accepted"));
+    std::fs::remove_dir_all(dir).unwrap();
+}

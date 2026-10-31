@@ -1,6 +1,6 @@
 use crate::{
-    Animation, Canvas, Frame, MAX_INPUT_BYTES, RenderOptions, Result, SceneOptions, TimedFrame,
-    animation, art, decode_media, export, lettering,
+    Animation, Canvas, EffectOptions, Frame, MAX_INPUT_BYTES, RenderOptions, Result, SceneOptions,
+    TimedFrame, animation, art, decode_media, effects, export, lettering,
 };
 use js_sys::{Array, Uint8Array};
 use std::cell::RefCell;
@@ -176,6 +176,7 @@ impl App {
             "duplicate",
             "flip-horizontal",
             "flip-vertical",
+            "apply-effect",
         ] {
             let element = node::<Element>(id)?;
             if self.loading {
@@ -270,10 +271,16 @@ pub fn start() -> std::result::Result<(), JsValue> {
         "download-text",
         "download-json",
         "download-html",
+        "apply-effect",
     ] {
         listen(id, "click", move |_| report(action(id)))?;
     }
     listen("mode", "change", move |_| report(fields()))?;
+    fill_effects().map_err(|e| JsValue::from_str(&e))?;
+    fill_art("").map_err(|e| JsValue::from_str(&e))?;
+    listen("art-search", "input", move |_| {
+        report(input("art-search").and_then(|search| fill_art(&search.value())))
+    })?;
     listen("timeline", "input", move |_| {
         report(state(|app| {
             app.clean()?;
@@ -427,7 +434,13 @@ fn generate(app: &mut App) -> Result<()> {
                 text: text("message")?,
             },
         )?,
-        "art" => Animation::still(art::template(&select("art-name")?)?),
+        "art" => {
+            let name = select("art-name")?;
+            if name.is_empty() {
+                return Err("No artwork matches the search. Clear it to see every piece.".into());
+            }
+            Animation::still(art::template(&name)?)
+        }
         "letters" => {
             let font = select("font")?;
             let custom = if font == "custom" {
@@ -628,10 +641,78 @@ fn action(id: &str) -> Result<()> {
                 "artwork.html",
                 "text/html;charset=utf-8",
             )?,
+            "apply-effect" => apply_effect(app)?,
             _ => return Err("Unknown editor action".into()),
         }
         app.display(true)
     })
+}
+fn apply_effect(app: &mut App) -> Result<()> {
+    let source = app.project.frames()[app.selected].frame.clone();
+    let options = EffectOptions {
+        duration_ms: u32::try_from(number("effect-duration")?)
+            .map_err(|_| "Duration is too large")?,
+        fps: u32::try_from(number("effect-fps")?).map_err(|_| "FPS is too large")?,
+        seed: u32::try_from(number("effect-seed")?).map_err(|_| "Seed is too large")?,
+    };
+    let project = effects::apply(&select("effect")?, &source, &options)?;
+    let count = project.frames().len();
+    app.commit(project);
+    app.seek(0);
+    status(
+        &format!("Effect applied: {count} frames from the selected frame. Press Play to watch."),
+        false,
+    );
+    Ok(())
+}
+fn element(tag: &str, text: &str) -> Result<Element> {
+    let element = document()
+        .create_element(tag)
+        .map_err(|_| "Cannot create a list entry")?;
+    element.set_text_content(Some(text));
+    Ok(element)
+}
+fn fill_effects() -> Result<()> {
+    let list = node::<Element>("effect")?;
+    for name in effects::EFFECTS {
+        let option = element("option", name)?;
+        list.append_child(&option)
+            .map_err(|_| "Cannot list effects")?;
+    }
+    Ok(())
+}
+/// Rebuild the artwork list, grouped by category, from the pieces matching `query`.
+fn fill_art(query: &str) -> Result<()> {
+    let list = node::<HtmlSelectElement>("art-name")?;
+    let previous = list.value();
+    list.set_text_content(None);
+    for category in art::CATEGORIES {
+        let group = element("optgroup", "")?;
+        let label = category[..1].to_ascii_uppercase() + &category[1..];
+        group
+            .set_attribute("label", &label)
+            .map_err(|_| "Cannot group artwork")?;
+        for piece in art::search(query).filter(|p| p.category == *category) {
+            let option = element("option", piece.name)?;
+            group
+                .append_child(&option)
+                .map_err(|_| "Cannot list artwork")?;
+        }
+        if group.has_child_nodes() {
+            list.append_child(&group)
+                .map_err(|_| "Cannot list artwork")?;
+        }
+    }
+    if art::piece(&previous).is_some_and(|p| p.matches(query)) {
+        list.set_value(&previous);
+    }
+    let count = art::search(query).count();
+    node::<Element>("art-matches")?.set_text_content(Some(&if count == 0 {
+        "No artwork matches. Try a tag such as bird, sea or frame.".to_string()
+    } else {
+        format!("{count} of {} pieces", art::CATALOGUE.len())
+    }));
+    Ok(())
 }
 fn tick() -> Result<()> {
     state(|app| {

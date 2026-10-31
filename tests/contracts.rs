@@ -1,6 +1,6 @@
 use apollinaires_ascii::{
-    Animation, Canvas, Frame, MAX_FRAMES, RenderOptions, SceneOptions, TimedFrame, animation, art,
-    decode_media, export, lettering, render_image,
+    Animation, Canvas, EffectOptions, Frame, MAX_FRAMES, RenderOptions, SceneOptions, TimedFrame,
+    animation, art, decode_media, effects, export, lettering, render_image,
 };
 use image::{DynamicImage, Rgba, RgbaImage};
 use lettering::Alignment;
@@ -141,8 +141,8 @@ fn project_validation_enforces_all_budgets() {
 }
 #[test]
 fn all_original_art_and_effects_are_real_ascii_and_deterministic() {
-    for name in art::NAMES {
-        ascii(&art::template(name).unwrap());
+    for piece in art::CATALOGUE {
+        ascii(&art::template(piece.name).unwrap());
     }
     assert!(art::template("unknown").is_err());
     let options = SceneOptions {
@@ -175,6 +175,196 @@ fn all_original_art_and_effects_are_real_ascii_and_deterministic() {
     assert!(animation::generate("ghost", &other).is_err());
     other.fps = 61;
     assert!(animation::generate("ghost", &other).is_err());
+}
+#[test]
+fn catalogue_is_large_unique_tagged_and_searchable() {
+    assert!(art::CATALOGUE.len() >= 60);
+    let mut names = std::collections::HashSet::new();
+    for piece in art::CATALOGUE {
+        let name = piece.name;
+        assert!(names.insert(name), "duplicate {name}");
+        let lower =
+            |s: &str| !s.is_empty() && s.bytes().all(|b| b.is_ascii_lowercase() || b == b'-');
+        assert!(
+            lower(name),
+            "{name} must be lowercase words joined by hyphens"
+        );
+        assert!(art::CATEGORIES.contains(&piece.category), "{name}");
+        assert!(
+            !piece.tags.is_empty() && piece.tags.iter().all(|t| lower(t)),
+            "{name}"
+        );
+        let frame = piece.frame().unwrap();
+        ascii(&frame);
+        assert!(
+            frame.width() <= 80 && frame.height() <= 24,
+            "{name} is too large"
+        );
+        for row in [0, frame.height() - 1] {
+            assert!(
+                frame.row(row).unwrap().iter().any(|b| *b != b' '),
+                "{name} has a blank edge row"
+            );
+        }
+        assert_eq!(art::piece(name), Some(piece));
+    }
+    for category in art::CATEGORIES {
+        assert!(art::search(category).count() >= 4, "{category}");
+    }
+    assert_eq!(art::search("").count(), art::CATALOGUE.len());
+    assert_eq!(
+        art::search("ANIMALS").count(),
+        art::CATALOGUE
+            .iter()
+            .filter(|p| p.category == "animals")
+            .count()
+    );
+    let birds: Vec<_> = art::search(" bird ").map(|p| p.name).collect();
+    for name in ["bird", "duck", "owl", "penguin"] {
+        assert!(birds.contains(&name), "{name}");
+    }
+    assert_eq!(art::search("no-such-tag").count(), 0);
+}
+fn check_effect(name: &str, source: &Frame, options: &EffectOptions) -> Animation {
+    let result = effects::apply(name, source, options).unwrap();
+    assert_eq!(
+        result,
+        effects::apply(name, source, options).unwrap(),
+        "{name}"
+    );
+    let expected = (u64::from(options.duration_ms) * u64::from(options.fps)).div_ceil(1000);
+    assert_eq!(result.frames().len() as u64, expected.max(2), "{name}");
+    assert!(!result.looping());
+    for entry in result.frames() {
+        assert_eq!(
+            (entry.frame.width(), entry.frame.height()),
+            (source.width(), source.height())
+        );
+        assert_eq!(entry.duration_ms, 1000 / options.fps);
+        ascii(&entry.frame);
+    }
+    let last = &result.frames().last().unwrap().frame;
+    if name == "burn" {
+        assert_eq!(
+            last,
+            &Frame::blank(source.width(), source.height()).unwrap()
+        );
+    } else {
+        assert_eq!(last, source, "{name} must finish on the source");
+    }
+    assert_eq!(Animation::from_json(&result.to_json()).unwrap(), result);
+    result
+}
+#[test]
+fn every_effect_animates_any_art_into_equal_ascii_frames() {
+    let lettering = lettering::render("HI, FRIEND!", "block", None, Alignment::Left, None).unwrap();
+    let sources = [
+        art::template("cat").unwrap(),
+        art::template("frame-ornate").unwrap(),
+        lettering,
+        Frame::from_text("x").unwrap(),
+        Frame::from_text("~").unwrap(),
+        Frame::blank(5, 3).unwrap(),
+    ];
+    for name in effects::EFFECTS {
+        for (index, source) in sources.iter().enumerate() {
+            for (duration_ms, fps) in [(1000, 20), (100, 1), (2500, 60), (777, 13)] {
+                let options = EffectOptions {
+                    duration_ms,
+                    fps,
+                    seed: 7,
+                };
+                let result = check_effect(name, source, &options);
+                if index < 3 && fps >= 13 {
+                    assert!(
+                        result.frames().windows(2).any(|p| p[0].frame != p[1].frame),
+                        "{name} must animate"
+                    );
+                    if *name != "wave" && *name != "burn" {
+                        assert_ne!(&result.frames()[0].frame, source, "{name} must start apart");
+                    }
+                }
+            }
+        }
+    }
+    let cat = &sources[0];
+    for name in ["reveal", "decrypt", "scatter", "rain", "burn"] {
+        let options = EffectOptions::default();
+        let other = EffectOptions {
+            seed: 8,
+            ..options.clone()
+        };
+        assert_ne!(
+            effects::apply(name, cat, &options).unwrap(),
+            effects::apply(name, cat, &other).unwrap(),
+            "{name} must use its seed"
+        );
+    }
+    let decrypting = effects::apply("decrypt", cat, &EffectOptions::default()).unwrap();
+    assert!(
+        decrypting.frames()[0]
+            .frame
+            .cells()
+            .iter()
+            .all(|b| (32..=126).contains(b))
+    );
+    let typing = effects::apply("typewriter", cat, &EffectOptions::default()).unwrap();
+    assert!(typing.frames()[0].frame.cells().contains(&b'_'));
+}
+#[test]
+fn effect_options_and_budgets_are_enforced() {
+    let cat = art::template("cat").unwrap();
+    let ok = EffectOptions::default();
+    assert!(effects::apply("sparkle", &cat, &ok).is_err());
+    for options in [
+        EffectOptions {
+            fps: 0,
+            ..ok.clone()
+        },
+        EffectOptions {
+            fps: 61,
+            ..ok.clone()
+        },
+        EffectOptions {
+            duration_ms: 99,
+            ..ok.clone()
+        },
+        EffectOptions {
+            duration_ms: 60_001,
+            ..ok.clone()
+        },
+        EffectOptions {
+            duration_ms: 60_000,
+            fps: 11,
+            seed: 0,
+        },
+    ] {
+        assert!(
+            effects::apply("reveal", &cat, &options).is_err(),
+            "{options:?}"
+        );
+    }
+    assert_eq!(
+        effects::apply(
+            "reveal",
+            &cat,
+            &EffectOptions {
+                duration_ms: 60_000,
+                fps: 10,
+                seed: 0
+            }
+        )
+        .unwrap()
+        .frames()
+        .len(),
+        MAX_FRAMES
+    );
+    let huge = Frame::blank(512, 256).unwrap();
+    let long = EffectOptions {
+        duration_ms: 4000,
+        ..ok
+    };
+    assert!(effects::apply("wave", &huge, &long).is_err());
 }
 #[test]
 fn lettering_covers_every_printable_ascii_character_in_every_font() {

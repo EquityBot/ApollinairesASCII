@@ -12,6 +12,7 @@
 pub mod animation;
 pub mod art;
 pub mod canvas;
+pub mod effects;
 pub mod export;
 pub mod frame;
 pub mod image_renderer;
@@ -23,6 +24,7 @@ mod web;
 
 pub use animation::{Animation, SceneOptions, TimedFrame};
 pub use canvas::Canvas;
+pub use effects::EffectOptions;
 pub use frame::Frame;
 pub use image_renderer::{RenderOptions, decode_media, render_image};
 
