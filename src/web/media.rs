@@ -5,6 +5,7 @@ use super::{
 };
 use crate::{Animation, Frame, RenderOptions, Result, TimedFrame, video};
 use js_sys::{Function, Object, Promise, Reflect};
+use std::cell::{Cell, RefCell};
 use wasm_bindgen::{JsCast, prelude::*};
 use wasm_bindgen_futures::{JsFuture, spawn_local};
 use web_sys::{
@@ -21,12 +22,18 @@ thread_local! {
     static TICK: Function = Closure::<dyn FnMut()>::new(|| report(tick()))
         .into_js_value()
         .unchecked_into();
+    // Rejects the media wait in progress, so Cancel releases the video at once.
+    static WAITING: RefCell<Option<Function>> = const { RefCell::new(None) };
+    // The ticket of a camera permission request the browser has not answered yet.
+    static REQUEST: Cell<Option<u32>> = const { Cell::new(None) };
 }
 
 pub(super) struct Camera {
+    id: u32,
     stream: MediaStream,
     video: HtmlVideoElement,
-    reader: Reader,
+    /// Created once the camera reports its picture size.
+    reader: Option<Reader>,
     options: RenderOptions,
     fps: u32,
     timer: i32,
@@ -115,8 +122,10 @@ async fn wait(target: &EventTarget, event: &str, failure: &str) -> Result<()> {
         timer = window()
             .set_timeout_with_callback_and_timeout_and_arguments_0(&reject, WAIT_MS)
             .ok();
+        WAITING.with(|waiting| *waiting.borrow_mut() = Some(reject));
     });
     let outcome = JsFuture::from(promise).await;
+    WAITING.with(|waiting| waiting.borrow_mut().take());
     abort.abort();
     if let Some(timer) = timer {
         window().clear_timeout_with_handle(timer);
@@ -169,11 +178,14 @@ fn set_disabled(id: &str, disabled: bool) -> Result<()> {
 /// Enables the media controls for the editor's current state.
 pub(super) fn controls(app: &App) -> Result<()> {
     let busy = app.loading || app.camera.is_some();
-    let recording = app.camera.as_ref().is_some_and(|c| c.recording.is_some());
+    let ready = app
+        .camera
+        .as_ref()
+        .is_some_and(|c| c.reader.is_some() && c.recording.is_none());
     set_disabled("video-convert", busy)?;
     set_disabled("media-cancel", !app.loading)?;
     set_disabled("camera-start", busy)?;
-    set_disabled("camera-record", app.camera.is_none() || recording)?;
+    set_disabled("camera-record", !ready)?;
     set_disabled("camera-stop", app.camera.is_none())
 }
 fn begin(app: &mut App, message: &str) -> Result<u32> {
@@ -223,6 +235,10 @@ pub(super) fn start() -> std::result::Result<(), JsValue> {
             // A new ticket makes the pending task discard its result and release its media.
             app.ticket = app.ticket.wrapping_add(1);
             app.loading = false;
+            REQUEST.set(None);
+            if let Some(reject) = WAITING.with(|waiting| waiting.borrow_mut().take()) {
+                let _ = reject.call0(&JsValue::NULL);
+            }
             progress(None);
             app.display(false)?;
             status("Cancelled. The artwork is unchanged.", false);
@@ -232,6 +248,17 @@ pub(super) fn start() -> std::result::Result<(), JsValue> {
     let hidden = Closure::<dyn FnMut(Event)>::new(|event: Event| {
         if event.type_() == "pagehide" || document().hidden() {
             report(state(|app| {
+                if REQUEST.get() == Some(app.ticket) && app.loading {
+                    // A permission answer arriving later finds a stale ticket and stops its tracks.
+                    REQUEST.set(None);
+                    app.ticket = app.ticket.wrapping_add(1);
+                    app.loading = false;
+                    app.display(false)?;
+                    status(
+                        "The camera request was cancelled because the page was hidden.",
+                        false,
+                    );
+                }
                 if stop(app) {
                     app.display(true)?;
                     status(
@@ -333,6 +360,9 @@ async fn sample(
         video.set_current_time(time / 1000.0);
         let failure = format!("The video could not be read at {:.2} s", time / 1000.0);
         wait(video, "seeked", &failure).await?;
+        if !current(ticket) {
+            return Err("Cancelled".into());
+        }
         frames.push(TimedFrame {
             frame: reader.read(video, options)?,
             duration_ms,
@@ -344,9 +374,6 @@ async fn sample(
 fn start_camera() {
     let prepare = state(|app| {
         app.clean()?;
-        if app.camera.is_some() {
-            return Err("The camera is already on.".into());
-        }
         let options = render_options()?;
         let fps = fps()?;
         let devices: MediaDevices = Reflect::get(&window().navigator(), &"mediaDevices".into())
@@ -357,65 +384,67 @@ fn start_camera() {
         let constraints = MediaStreamConstraints::new();
         constraints.set_video_bool(true);
         constraints.set_audio_bool(false);
-        let request = devices
-            .get_user_media_with_constraints(&constraints)
-            .map_err(|_| "The camera could not be requested")?;
+        // The request is owned by its ticket before the browser is asked.
         let ticket = begin(
             app,
             "Waiting for camera permission. Frames stay in this browser.",
         )?;
-        Ok((request, ticket, options, fps))
+        REQUEST.set(Some(ticket));
+        match devices.get_user_media_with_constraints(&constraints) {
+            Ok(request) => Ok((request, ticket, options, fps)),
+            Err(_) => {
+                REQUEST.set(None);
+                app.loading = false;
+                app.display(false)?;
+                Err("The camera could not be requested".into())
+            }
+        }
     });
     let (request, ticket, options, fps) = match prepare {
         Ok(value) => value,
         Err(error) => return status(&error, true),
     };
     spawn_local(async move {
-        let stream: MediaStream = match JsFuture::from(request).await {
-            Ok(stream) => stream.unchecked_into(),
-            Err(error) => {
-                let name = error.dyn_ref::<DomException>().map(|e| e.name());
-                let message = match name.as_deref() {
-                    Some("NotAllowedError") => {
-                        "Camera permission was refused. Allow it in the browser's site settings to try again."
+        let answer = JsFuture::from(request).await;
+        report(state(|app| {
+            let stream: MediaStream = match answer {
+                Ok(stream) => stream.unchecked_into(),
+                Err(error) => {
+                    if ticket != app.ticket {
+                        return Ok(());
                     }
-                    Some("NotFoundError" | "OverconstrainedError") => "No camera was found.",
-                    Some("NotReadableError") => "The camera is in use by another application.",
-                    _ => "The camera could not start.",
-                };
-                return report(state(|app| {
-                    if ticket == app.ticket {
-                        app.loading = false;
-                        app.display(false)?;
-                        return Err(message.into());
+                    REQUEST.set(None);
+                    app.loading = false;
+                    app.display(false)?;
+                    let name = error.dyn_ref::<DomException>().map(|e| e.name());
+                    return Err(match name.as_deref() {
+                        Some("NotAllowedError") => {
+                            "Camera permission was refused. Allow it in the browser's site settings to try again."
+                        }
+                        Some("NotFoundError" | "OverconstrainedError") => "No camera was found.",
+                        Some("NotReadableError") => "The camera is in use by another application.",
+                        _ => "The camera could not start.",
                     }
-                    Ok(())
-                }));
-            }
-        };
-        let video = video_element();
-        let started = match &video {
-            Ok(video) => {
-                video.set_src_object(Some(&stream));
-                match video.play() {
-                    Ok(play) => JsFuture::from(play)
-                        .await
-                        .map(|_| ())
-                        .map_err(|_| "The camera stream could not start".to_string()),
-                    Err(_) => Err("The camera stream could not start".into()),
+                    .into());
                 }
-            }
-            Err(error) => Err(error.clone()),
-        };
-        let outcome = state(|app| {
-            if ticket != app.ticket || document().hidden() {
+            };
+            if ticket != app.ticket {
                 stop_tracks(&stream);
                 return Ok(());
             }
+            REQUEST.set(None);
             app.loading = false;
-            let opened = started.and_then(|()| {
-                let video = video?;
-                let reader = Reader::new(&video, options.width)?;
+            if document().hidden() {
+                stop_tracks(&stream);
+                app.display(false)?;
+                status("The camera stayed off because the page was hidden.", false);
+                return Ok(());
+            }
+            let opened = video_element().and_then(|video| {
+                video.set_src_object(Some(&stream));
+                let play = video
+                    .play()
+                    .map_err(|_| "The camera stream could not start")?;
                 let timer = TICK
                     .with(|tick| {
                         window().set_interval_with_callback_and_timeout_and_arguments_0(
@@ -424,9 +453,9 @@ fn start_camera() {
                         )
                     })
                     .map_err(|_| "Cannot schedule camera frames")?;
-                Ok((video, reader, timer))
+                Ok((video, play, timer))
             });
-            let (video, reader, timer) = match opened {
+            let (video, play, timer) = match opened {
                 Ok(value) => value,
                 Err(error) => {
                     stop_tracks(&stream);
@@ -434,28 +463,36 @@ fn start_camera() {
                     return Err(error);
                 }
             };
-            let rows = reader.rows(&options);
+            // The camera is owned, and so stoppable, before playback starts.
             app.camera = Some(Camera {
+                id: ticket,
                 stream,
                 video,
-                reader,
+                reader: None,
                 options,
                 fps,
                 timer,
                 recording: None,
             });
+            spawn_local(async move {
+                if JsFuture::from(play).await.is_err() {
+                    report(state(|app| {
+                        if app.camera.as_ref().is_some_and(|c| c.id == ticket) {
+                            stop(app);
+                            app.display(true)?;
+                            return Err("The camera stream could not start".into());
+                        }
+                        Ok(())
+                    }));
+                }
+            });
             app.display(false)?;
-            node::<Element>("dimensions")?.set_text_content(Some(&format!(
-                "{} columns x {rows} rows, live camera",
-                app.camera.as_ref().map_or(0, |c| c.options.width)
-            )));
             status(
                 "Camera on. The preview is text; frames stay in this browser. Choose Record to capture them.",
                 false,
             );
             Ok(())
-        });
-        report(outcome);
+        }));
     });
 }
 fn stop_tracks(stream: &MediaStream) {
@@ -485,11 +522,11 @@ fn record() -> Result<()> {
             .filter(|s| (1..=60).contains(s))
             .ok_or("Recording length must be 1..=60 seconds")?;
         let limit = (seconds * camera.fps) as usize;
-        video::check_capture(
-            camera.options.width,
-            camera.reader.rows(&camera.options),
-            limit,
-        )?;
+        let reader = camera
+            .reader
+            .as_ref()
+            .ok_or("Wait for the camera picture to appear")?;
+        video::check_capture(camera.options.width, reader.rows(&camera.options), limit)?;
         camera.recording = Some(Recording {
             seconds,
             limit,
@@ -510,10 +547,30 @@ fn tick() -> Result<()> {
         let Some(camera) = app.camera.as_mut() else {
             return Ok(());
         };
-        let frame = if camera.stream.active() {
-            camera.reader.read(&camera.video, &camera.options)
-        } else {
-            Err("The camera stopped.".into())
+        if camera.reader.is_none() && camera.stream.active() {
+            if camera.video.video_width() == 0 {
+                return Ok(());
+            }
+            match Reader::new(&camera.video, camera.options.width) {
+                Ok(reader) => {
+                    node::<Element>("dimensions")?.set_text_content(Some(&format!(
+                        "{} columns x {} rows, live camera",
+                        camera.options.width,
+                        reader.rows(&camera.options)
+                    )));
+                    camera.reader = Some(reader);
+                    return controls(app);
+                }
+                Err(error) => {
+                    stop(app);
+                    app.display(true)?;
+                    return Err(error);
+                }
+            }
+        }
+        let frame = match (&camera.reader, camera.stream.active()) {
+            (Some(reader), true) => reader.read(&camera.video, &camera.options),
+            _ => Err("The camera stopped.".into()),
         };
         let frame = match frame {
             Ok(frame) => frame,

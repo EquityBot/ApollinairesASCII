@@ -52,6 +52,16 @@ fn sampling_rejects_bad_ranges_rates_and_frame_counts() {
     );
     let error = sample_times(limit + 100.0, 0.0, limit + 100.0, 10).unwrap_err();
     assert!(error.contains("601 frames"), "{error}");
+    // A final sample under 10 ms is dropped before the frame limit applies.
+    let times = sample_times(10_001.0, 0.0, 10_001.0, 60).unwrap();
+    assert_eq!(times.len(), MAX_FRAMES);
+    assert_eq!(
+        frame_durations(&times, 10_001.0)
+            .unwrap()
+            .iter()
+            .sum::<u32>(),
+        10_001
+    );
 }
 
 #[test]

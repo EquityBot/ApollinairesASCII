@@ -31,16 +31,18 @@ pub fn sample_times(duration_ms: f64, start_ms: f64, end_ms: f64, fps: u32) -> R
         ));
     }
     let rate = f64::from(fps);
-    let needed = ((end_ms - start_ms) * rate / 1000.0).ceil();
-    if needed > MAX_FRAMES as f64 {
-        return Err(format!(
-            "The clip needs {needed} frames; the limit is {MAX_FRAMES}. Shorten it or lower the frame rate."
-        ));
-    }
-    Ok((0..needed as usize)
+    // One candidate beyond the limit shows whether the clip needs too many frames.
+    let times: Vec<f64> = (0..=MAX_FRAMES)
         .map(|i| start_ms + i as f64 * 1000.0 / rate)
         .take_while(|t| end_ms.round() - t.round() >= MIN_FRAME_MS)
-        .collect())
+        .collect();
+    if times.len() > MAX_FRAMES {
+        let needed = ((end_ms - start_ms) * rate / 1000.0).ceil();
+        return Err(format!(
+            "The clip needs about {needed} frames; the limit is {MAX_FRAMES}. Shorten it or lower the frame rate."
+        ));
+    }
+    Ok(times)
 }
 
 /// Whether a camera frame captured at `now_ms` keeps every duration at 10 ms or more.
