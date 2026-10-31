@@ -110,7 +110,7 @@ enum Command {
         #[arg(long, default_value = "HELLO, FRIEND")]
         text: String,
     },
-    /// Load .txt or an AsciiForge .json project. Text CRLF is normalised to LF.
+    /// Load .txt or an ApollinairesASCII .json project. Text CRLF is normalised to LF.
     Import {
         input: PathBuf,
         #[arg(long)]

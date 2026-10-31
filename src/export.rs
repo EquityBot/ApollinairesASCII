@@ -10,14 +10,14 @@ pub fn html(project: &Animation) -> String {
     let mut result = String::from(
         r#"<!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AsciiForge text animation</title>
+<title>ApollinairesASCII text animation</title>
 <style>
 :root{color-scheme:dark}body{margin:24px;background:#000000;color:#FFFFF0;font:16px system-ui}
 button{font:inherit;min-height:44px;padding:8px 16px;background:#66023C;color:#FFFFF0;border:1px solid #FFFFF0;cursor:pointer}
 button:focus-visible,pre:focus-visible{outline:3px solid #FFD32A;outline-offset:4px}
 pre{font:14px/1.2 ui-monospace,Consolas,monospace;white-space:pre;overflow:auto;max-width:100%;user-select:text}
 </style>
-<h1>AsciiForge</h1><p>Selectable ASCII text. Copy it into any monospace editor.</p>
+<h1>ApollinairesASCII</h1><p>Selectable ASCII text. Copy it into any monospace editor.</p>
 <button id="play" type="button">Play</button> <button id="step" type="button">Next frame</button>
 <p id="count"></p><pre id="art" tabindex="0" aria-label="ASCII artwork"></pre>
 <script type="application/json" id="project">"#,

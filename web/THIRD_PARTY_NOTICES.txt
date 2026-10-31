@@ -1,10 +1,10 @@
-AsciiForge dependency notices
+ApollinairesASCII dependency notices
 Locked dependencies checked 1 November 2026. Includes native and browser dependencies.
 
 # MIT License
 
 Copyright (c) 2022-present KoBruh
-Copyright (c) 2026 AsciiForge contributors
+Copyright (c) 2026 ApollinairesASCII contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -33,7 +33,7 @@ Some older or guessed repository paths returned 404. They were not counted as in
 
 ## Ghostty and GIVEAWAY-ASCII
 
-[Ghostty's website source](https://github.com/ghostty-org/website/tree/464e0f71ed50e94ceee8df84a9bb687e48cc0392/terminals/home/animation_frames) contains text animation frames loaded by its terminal component. This is the behaviour AsciiForge follows: selectable text cells changing over time. The original Ghostty artwork was not copied; AsciiForge's ghost is a new procedural scene.
+[Ghostty's website source](https://github.com/ghostty-org/website/tree/464e0f71ed50e94ceee8df84a9bb687e48cc0392/terminals/home/animation_frames) contains text animation frames loaded by its terminal component. This is the behaviour ApollinairesASCII follows: selectable text cells changing over time. The original Ghostty artwork was not copied; ApollinairesASCII's ghost is a new procedural scene.
 
 [arimecoa/GIVEAWAY-ASCII](https://github.com/arimecoa/GIVEAWAY-ASCII) renders its effect in a canvas. Character-shaped pixels in a canvas do not meet this project's selectable-text output requirement, so it was not selected.
 

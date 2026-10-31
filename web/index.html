@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Make static ASCII art, block letters and animated ASCII. Edit and export real, selectable text.">
-  <title>AsciiForge | Art made of characters</title>
+  <title>ApollinairesASCII | Art made of characters</title>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <a class="skip" href="#workspace">Skip to artwork</a>
   <header class="masthead">
-    <div><a class="wordmark" href="./">[A] AsciiForge</a><p>Art made of characters.</p></div>
-    <a href="https://github.com/EquityBot/AsciiForge">Source &amp; CLI</a>
+    <div><a class="wordmark" href="./">[A] ApollinairesASCII</a><p>Art made of characters.</p></div>
+    <a href="https://github.com/EquityBot/ApollinairesASCII">Source &amp; CLI</a>
   </header>
   <main id="workspace">
     <div class="intro"><h1>Every mark is a character.</h1><p>Make a still, set letters in motion or build an animation. Everything you see in the artwork is selectable ASCII text.</p></div>
@@ -58,7 +58,7 @@
         </details>
         <details>
           <summary>Open existing text or animation</summary>
-          <label for="open-file">ASCII .txt or AsciiForge .json</label><input id="open-file" type="file" accept=".txt,.json">
+          <label for="open-file">ASCII .txt or ApollinairesASCII .json</label><input id="open-file" type="file" accept=".txt,.json">
           <p>Short text rows are padded with spaces. Unicode and terminal control codes are refused.</p>
         </details>
       </aside>
@@ -91,7 +91,7 @@
     </div>
     <section class="notes"><h2>Text, all the way through.</h2><p>No canvas, image preview, SVG artwork or Unicode block substitutes. Copy a frame into an editor, use the Rust library in your own program or play a saved project in a terminal.</p><p>The JSON project keeps frames and their durations. The standalone HTML player renders the same characters as text. Image files are accepted only as conversion inputs.</p></section>
   </main>
-  <footer><span>AsciiForge / EquityBot</span><a href="./THIRD_PARTY_NOTICES.txt">Dependency notices</a><a href="https://github.com/EquityBot/AsciiForge/blob/master/docs/RESEARCH.md">Research &amp; provenance</a></footer>
+  <footer><span>ApollinairesASCII / EquityBot</span><a href="./THIRD_PARTY_NOTICES.txt">Dependency notices</a><a href="https://github.com/EquityBot/ApollinairesASCII/blob/master/docs/RESEARCH.md">Research &amp; provenance</a></footer>
   <noscript><p>This editor needs JavaScript to load its Rust WebAssembly module. The CLI works without a browser.</p></noscript>
   <script type="module">
     import init from './pkg/ascii_forge.js';

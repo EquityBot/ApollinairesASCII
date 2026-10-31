@@ -1,8 +1,8 @@
-# AsciiForge
+# ApollinairesASCII
 
-Static art, block letters and animated scenes made of real, selectable ASCII characters. A Rust library, native CLI and browser editor share the same rendering and validation code.
+Static art, block letters and animated scenes made of real, selectable ASCII characters. The `ascii-forge` Rust library and CLI share their rendering and validation code with the browser editor.
 
-[Open the browser editor](https://equitybot.github.io/AsciiForge/) · [CLI guide](docs/CLI.md) · [Library example](examples/library.rs) · [Research and provenance](docs/RESEARCH.md)
+[Open the browser editor](https://equitybot.github.io/ApollinairesASCII/) · [CLI guide](docs/CLI.md) · [Library example](examples/library.rs) · [Research and provenance](docs/RESEARCH.md)
 
 ```text
        .-.
@@ -33,8 +33,8 @@ All maintained application logic is Rust, including the browser's DOM controls a
 Install [Rust](https://www.rust-lang.org/tools/install), then:
 
 ```sh
-git clone https://github.com/EquityBot/AsciiForge.git
-cd AsciiForge
+git clone https://github.com/EquityBot/ApollinairesASCII.git
+cd ApollinairesASCII
 cargo install --locked --path .
 ascii-forge art ghost
 ascii-forge text "RUST" --font block
@@ -52,7 +52,7 @@ The library has no browser or CLI dependency when default features are disabled:
 
 ```toml
 [dependencies]
-ascii-forge = { git = "https://github.com/EquityBot/AsciiForge", default-features = false }
+ascii-forge = { git = "https://github.com/EquityBot/ApollinairesASCII", default-features = false }
 ```
 
 ```rust
@@ -100,7 +100,7 @@ The integration tests cover the ASCII contract, whitespace, drawing, all bundled
 
 ## Foundation and licence
 
-AsciiForge retains the history of [orhnk/RASCII](https://github.com/orhnk/RASCII), starting at `8d33a3670e51298d530ab202090b212501310cdd`. Its MIT image-conversion approach is the foundation of the converter. The shared frame model, drawing, scenes, project format, editor and exporters are new Rust code. It is an evolution of a focused converter, not a claim that upstream supplied this whole toolkit.
+ApollinairesASCII retains the history of [orhnk/RASCII](https://github.com/orhnk/RASCII), starting at `8d33a3670e51298d530ab202090b212501310cdd`. Its MIT image-conversion approach is the foundation of the converter. The shared frame model, drawing, scenes, project format, editor and exporters are new Rust code. It is an evolution of a focused converter, not a claim that upstream supplied this whole toolkit.
 
 [Research](docs/RESEARCH.md) records 1,164 discovered repositories across 27 multilingual searches, the shortlist and why this foundation was selected. Discovery metadata is not a source audit of every result. No Ghostty animation artwork was copied.
 

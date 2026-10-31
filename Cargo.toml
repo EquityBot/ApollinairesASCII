@@ -6,7 +6,7 @@ rust-version = "1.99"
 publish = false
 license = "MIT"
 description = "Static art, block lettering and animation as real ASCII text"
-repository = "https://github.com/EquityBot/AsciiForge"
+repository = "https://github.com/EquityBot/ApollinairesASCII"
 keywords = ["ascii", "art", "figlet", "animation", "wasm"]
 
 [lib]
