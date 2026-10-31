@@ -23,7 +23,7 @@ ascii-forge check movie.json
 ascii-forge play movie.json --loops 3
 ```
 
-`--output` creates a new file. An existing file causes an error, even when its contents are identical. Without it, exports go to stdout. Errors go to stderr and return a nonzero exit status. `check` reports validated dimensions and timing on stderr.
+`--output` creates a new file. An existing file causes an error, even when its contents are identical. Without it, exports go to stdout. Errors go to stderr and return a nonzero exit status. `check` reports validated dimensions and timing on stdout.
 
 `--format text|json|html` overrides extension/default inference. `.json` and `.html` output extensions select those formats; otherwise a still defaults to text and an animation to JSON. Animated text export requires an explicit zero-based `--frame`. `--frame` is valid only with text export.
 

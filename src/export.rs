@@ -27,11 +27,11 @@ pre{font:14px/1.2 ui-monospace,Consolas,monospace;white-space:pre;overflow:auto;
 'use strict';
 const p=JSON.parse(document.getElementById('project').textContent);
 const art=document.getElementById('art'),play=document.getElementById('play'),count=document.getElementById('count');
-let index=0,playing=false,last=0,elapsed=0;
+let index=0,playing=false,last=0,elapsed=0,completed=false;
 function show(){art.textContent=p.frames[index].text;count.textContent='Frame '+(index+1)+' of '+p.frames.length;}
 function pause(){playing=false;play.textContent='Play';}
-play.onclick=()=>{playing=!playing;play.textContent=playing?'Pause':'Play';last=0;elapsed=0;};
-document.getElementById('step').onclick=()=>{pause();index=(index+1)%p.frames.length;show();};
+play.onclick=()=>{if(playing){pause();return;}if(completed){index=0;elapsed=0;completed=false;show();}playing=true;play.textContent='Pause';last=0;};
+document.getElementById('step').onclick=()=>{pause();index=(index+1)%p.frames.length;elapsed=0;completed=false;show();};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
 const motion=matchMedia('(prefers-reduced-motion: reduce)');
 motion.addEventListener('change',()=>{if(motion.matches)pause();});
@@ -40,7 +40,7 @@ function tick(now){
   if(last)elapsed+=now-last;
   while(playing&&elapsed>=p.frames[index].duration_ms){
    elapsed-=p.frames[index].duration_ms;
-   if(index+1<p.frames.length)index++;else if(p.loop)index=0;else pause();
+   if(index+1<p.frames.length)index++;else if(p.loop)index=0;else {pause();completed=true;}
    show();
   }
  }last=now;requestAnimationFrame(tick);

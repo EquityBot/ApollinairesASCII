@@ -96,13 +96,21 @@ impl App {
         self.playing = false;
         self.last = 0.0;
     }
+    fn seek(&mut self, index: usize) {
+        self.pause();
+        self.selected = index;
+        self.elapsed = self.project.frames()[..index]
+            .iter()
+            .map(|frame| f64::from(frame.duration_ms))
+            .sum();
+    }
     fn commit(&mut self, project: Animation) {
         self.pause();
         self.undo
             .push(std::mem::replace(&mut self.project, project));
         self.redo.clear();
         self.limit_history();
-        self.selected = self.selected.min(self.project.frames().len() - 1);
+        self.seek(self.selected.min(self.project.frames().len() - 1));
         self.dirty = false;
         self.modified = true;
     }
@@ -269,8 +277,7 @@ pub fn start() -> std::result::Result<(), JsValue> {
     listen("timeline", "input", move |_| {
         report(state(|app| {
             app.clean()?;
-            app.pause();
-            app.selected = number("timeline")?.min(app.project.frames().len() - 1);
+            app.seek(number("timeline")?.min(app.project.frames().len() - 1));
             app.display(true)
         }))
     })?;
@@ -460,7 +467,7 @@ fn generate(app: &mut App) -> Result<()> {
         )?;
     }
     app.commit(project);
-    app.selected = 0;
+    app.seek(0);
     app.display(true)?;
     status(
         "Artwork generated. Save the project to keep every frame.",
@@ -528,22 +535,21 @@ fn action(id: &str) -> Result<()> {
                 if app.playing {
                     app.pause();
                 } else {
-                    app.elapsed = app.project.frames()[..app.selected]
-                        .iter()
-                        .map(|f| f.duration_ms as f64)
-                        .sum();
+                    if !app.project.looping() && app.elapsed >= app.project.duration_ms() as f64 {
+                        app.seek(0);
+                    }
                     app.last = now();
                     app.playing = true;
                 }
             }
             "previous" | "next" => {
-                app.pause();
                 let count = app.project.frames().len();
-                app.selected = if id == "next" {
+                let index = if id == "next" {
                     (app.selected + 1) % count
                 } else {
                     (app.selected + count - 1) % count
                 };
+                app.seek(index);
             }
             "undo" | "redo" => {
                 app.pause();
@@ -560,7 +566,7 @@ fn action(id: &str) -> Result<()> {
                     app.undo.push(current);
                 }
                 app.limit_history();
-                app.selected = app.selected.min(app.project.frames().len() - 1);
+                app.seek(app.selected.min(app.project.frames().len() - 1));
                 app.modified = true;
             }
             "add-frame" | "duplicate" | "delete-frame" | "move-left" | "move-right" => {
@@ -590,6 +596,7 @@ fn action(id: &str) -> Result<()> {
                 } else if id == "move-left" {
                     app.selected -= 1;
                 }
+                app.seek(app.selected);
             }
             "flip-horizontal" | "flip-vertical" => {
                 let entry = &app.project.frames()[app.selected];
@@ -611,9 +618,8 @@ fn action(id: &str) -> Result<()> {
                     "artwork.ascii.json",
                     "application/json",
                 )?;
-                app.modified = false;
                 status(
-                    "Project download requested. It contains every frame and duration.",
+                    "Project download requested. Check the saved file before closing this page.",
                     false,
                 );
             }
@@ -743,7 +749,7 @@ fn begin_file(id: &'static str) {
                     }
                 };
                 app.commit(project);
-                app.selected = 0;
+                app.seek(0);
                 input("width")?.set_value(&app.project.width().to_string());
                 input("height")?.set_value(&app.project.height().to_string());
                 status(

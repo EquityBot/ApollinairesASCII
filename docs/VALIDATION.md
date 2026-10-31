@@ -34,6 +34,8 @@ Headless Brave loaded and executed the generated WebAssembly module over local H
 - CRLF/ragged text import, custom FLF import, image conversion and 2-frame GIF import retaining 20/70 ms delays.
 - Layouts at 360, 768 and 1,440 pixels, no page-level horizontal overflow and visible buttons at least 44 pixels high.
 - Reachable top rows in a 256-row preview. Browser runtime errors: zero.
+- Two complete non-looping playback cycles in the Rust editor and standalone HTML player, preserving 80/100 ms frame durations under a controlled browser clock, plus pause/resume retaining the remaining frame time.
+- An actual unload prompt after a deliberately blocked JSON download. Download requests retain unsaved-work protection.
 
 Screenshots were visually inspected. Clipboard permission was denied by the headless browser even after a test permission request. The visible select-and-copy fallback and actual text selection were checked; a successful clipboard API write was not verified in that environment.
 
@@ -43,6 +45,6 @@ These browser checks were local session checks, not a maintained cross-browser C
 
 There is no video decoder, webcam capture, network media fetching, ANSI-colour artwork mode, raster/vector artwork exporter or Unicode-art mode. GIF is the animated media import format; other media inputs use the image library's still-image decoding. Oversize inputs are refused. Browser work is synchronous Rust after the bounded file read, so large valid conversions may briefly occupy the UI thread. Resource limits bound accepted files and projects, not the browser process's total memory.
 
-The browser has bounded undo history and no automatic local persistence. Save a JSON project to retain all frames and timing. Text export saves one selected frame. Closing or reloading a modified project requests the browser's unsaved-work prompt; downloads are reported as requested because the page cannot prove where the browser saved a file.
+The browser has bounded undo history and no automatic local persistence. Save a JSON project to retain all frames and timing. Text export saves one selected frame. Closing or reloading a modified project requests the browser's unsaved-work prompt; downloads are reported as requested because the page cannot prove where the browser saved a file. Requesting a download does not clear the unsaved-work warning.
 
 Calvino design review completed with verified GPT-6 and an Extra High fallback after the model picker showed Pro unavailable. Final publication review and hosted CI/deployment results are recorded in the publication handoff; local checks alone do not establish those external results.
