@@ -8,6 +8,8 @@ Aikido reported `AIKIDO-2026-10928` in `weezl` 0.1.12. GIF input reaches the LZW
 
 ## Remaining package alerts
 
+Cargo applies `[patch]` only from a workspace root. Downstream Rust applications must also include the pinned GIF patch shown in the README; a library dependency's own patch section is not inherited. Verify that the consuming application's lockfile resolves `weezl` 0.2.1 or a later fixed version. This requirement remains until a compatible stable GIF release incorporates the fix.
+
 | Locked package | Aikido alerts | Current application reachability |
 | --- | --- | --- |
 | `zip` 0.6.6, through `figlet-rs` 1.0.0 | `CVE-2026-115905`, `CVE-2026-115906`, `AIKIDO-2026-476773`, `AIKIDO-2026-306911` | Archive handling is not called. Only validated plain FLF content and embedded fonts reach `FIGlet::from_content` / built-in methods. |

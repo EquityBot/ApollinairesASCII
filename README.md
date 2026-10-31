@@ -53,7 +53,12 @@ The library has no browser or CLI dependency when default features are disabled:
 ```toml
 [dependencies]
 ascii-forge = { git = "https://github.com/EquityBot/ApollinairesASCII", default-features = false }
+
+[patch.crates-io]
+gif = { git = "https://github.com/image-rs/image-gif", rev = "e60e4dd7708cc50f9371185cefa04273f410f116" }
 ```
+
+Include the patch in your application's workspace root whilst the upstream GIF fix awaits a stable release. Cargo does not inherit a dependency's patch section. The CLI and browser builds in this repository already apply it. See [dependency notes](docs/DEPENDENCIES.md).
 
 ```rust
 use ascii_forge::{Animation, Canvas, SceneOptions, animation};
