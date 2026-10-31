@@ -1,6 +1,6 @@
 # ApollinairesASCII
 
-[![Checks and browser](https://github.com/EquityBot/ApollinairesASCII/actions/workflows/checks.yml/badge.svg)](https://github.com/EquityBot/ApollinairesASCII/actions/workflows/checks.yml) [![Licence: MIT](.github/assets/badges/licence.svg)](LICENSE.md) [![Editor: in browser](.github/assets/badges/editor.svg)](https://equitybot.github.io/ApollinairesASCII/)
+[![Checks and browser](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/checks.yml/badge.svg)](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/checks.yml) [![Licence: MIT](.github/assets/badges/licence.svg)](LICENSE.md) [![Editor: in browser](.github/assets/badges/editor.svg)](https://equitybot.github.io/ApollinaireASCII/)
 
 ![A ghost drawn in # and : characters floats up and down](docs/media/ghost.gif)
 
@@ -8,7 +8,7 @@
 
 Static art, block letters and animated scenes made of real, selectable ASCII characters. The `apollinaires-ascii` Rust library and CLI share their rendering and validation code with the browser editor.
 
-[Open the browser editor](https://equitybot.github.io/ApollinairesASCII/) · [CLI guide](docs/CLI.md) · [Library example](examples/library.rs) · [Research and provenance](docs/RESEARCH.md)
+[Open the browser editor](https://equitybot.github.io/ApollinaireASCII/) · [CLI guide](docs/CLI.md) · [Library example](examples/library.rs) · [Research and provenance](docs/RESEARCH.md)
 
 ```text
        .-.
@@ -36,12 +36,18 @@ All maintained application logic is Rust, including the browser's DOM controls a
 
 ## Run the CLI
 
-Download the archive for your platform from [Releases](https://github.com/EquityBot/ApollinairesASCII/releases/latest): Windows, macOS and Linux on x86-64 and ARM64, with `SHA256SUMS.txt`. Unpack it and put `apollinaire` on your `PATH`.
+Download the archive for your platform from [Releases](https://github.com/EquityBot/ApollinaireASCII/releases/latest): Windows, macOS and Linux on x86-64 and ARM64, with `SHA256SUMS.txt`. Unpack it and put `apollinaire` on your `PATH`.
+
+From v0.3.0, each archive has a signed build provenance attestation. To confirm an archive was built by this repository's release workflow, run:
+
+```sh
+gh attestation verify apollinaire-v0.3.0-x86_64-unknown-linux-musl.tar.gz --repo EquityBot/ApollinaireASCII
+```
 
 To build from source instead, install [Rust](https://www.rust-lang.org/tools/install), then:
 
 ```sh
-cargo install --locked --git https://github.com/EquityBot/ApollinairesASCII
+cargo install --locked --git https://github.com/EquityBot/ApollinaireASCII
 ```
 
 ```sh
@@ -61,7 +67,7 @@ The library has no browser or CLI dependency when default features are disabled:
 
 ```toml
 [dependencies]
-apollinaires-ascii = { git = "https://github.com/EquityBot/ApollinairesASCII", default-features = false }
+apollinaires-ascii = { git = "https://github.com/EquityBot/ApollinaireASCII", default-features = false }
 
 [patch.crates-io]
 gif = { git = "https://github.com/image-rs/image-gif", rev = "e60e4dd7708cc50f9371185cefa04273f410f116" }

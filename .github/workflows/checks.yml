@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CARGO_INCREMENTAL: 0
+
 jobs:
   native:
     strategy:
@@ -23,6 +26,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: native-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          restore-keys: native-${{ runner.os }}-
       - run: cargo fmt --all --check
       - run: cargo clippy --locked --all-targets -- -D warnings
       - run: cargo test --locked
@@ -35,10 +47,33 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: browser-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          restore-keys: browser-
+      - name: Install wasm-bindgen and wasm-opt
+        run: |
+          curl -fsSLo wasm-bindgen.tar.gz https://github.com/wasm-bindgen/wasm-bindgen/releases/download/0.2.130/wasm-bindgen-0.2.130-x86_64-unknown-linux-musl.tar.gz
+          curl -fsSLo binaryen.tar.gz https://github.com/WebAssembly/binaryen/releases/download/version_133/binaryen-version_133-x86_64-linux.tar.gz
+          sha256sum -c <<'EOF'
+          9687f3bb551b9f66f37ed32a40d7913a00f7962db653054e56857bc306c3227f  wasm-bindgen.tar.gz
+          2dc9c7813f5375db93d96ead4b78222fcc3e2677bbb832297af4797782a37489  binaryen.tar.gz
+          EOF
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf wasm-bindgen.tar.gz -C "$HOME/.local/bin" --strip-components=1 wasm-bindgen-0.2.130-x86_64-unknown-linux-musl/wasm-bindgen
+          tar -xzf binaryen.tar.gz -C "$HOME/.local/bin" --strip-components=2 binaryen-version_133/bin/wasm-opt
+          rm wasm-bindgen.tar.gz binaryen.tar.gz
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
       - run: cargo build --locked --release --target wasm32-unknown-unknown --no-default-features --features web
-      - run: cargo install --locked wasm-bindgen-cli --version 0.2.130
       - run: wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --target web --out-dir web/pkg --out-name apollinaires_ascii
+      # -O3 keeps conversion speed; size-focused levels slow image and video conversion.
+      - run: wasm-opt -O3 web/pkg/apollinaires_ascii_bg.wasm -o web/pkg/apollinaires_ascii_bg.wasm
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: web
