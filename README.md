@@ -1,6 +1,12 @@
 # ApollinairesASCII
 
-Static art, block letters and animated scenes made of real, selectable ASCII characters. The `ascii-forge` Rust library and CLI share their rendering and validation code with the browser editor.
+[![Checks and browser](https://github.com/EquityBot/ApollinairesASCII/actions/workflows/checks.yml/badge.svg)](https://github.com/EquityBot/ApollinairesASCII/actions/workflows/checks.yml) [![Licence: MIT](.github/assets/badges/licence.svg)](LICENSE.md) [![Editor: in browser](.github/assets/badges/editor.svg)](https://equitybot.github.io/ApollinairesASCII/)
+
+![A ghost drawn in # and : characters floats up and down](docs/media/ghost.gif)
+
+<sub>A preview of `apollinaire animate ghost`. The tools themselves output text, never images.</sub>
+
+Static art, block letters and animated scenes made of real, selectable ASCII characters. The `apollinaires-ascii` Rust library and CLI share their rendering and validation code with the browser editor.
 
 [Open the browser editor](https://equitybot.github.io/ApollinairesASCII/) · [CLI guide](docs/CLI.md) · [Library example](examples/library.rs) · [Research and provenance](docs/RESEARCH.md)
 
@@ -30,18 +36,21 @@ All maintained application logic is Rust, including the browser's DOM controls a
 
 ## Run the CLI
 
-Install [Rust](https://www.rust-lang.org/tools/install), then:
+Download the archive for your platform from [Releases](https://github.com/EquityBot/ApollinairesASCII/releases/latest): Windows, macOS and Linux on x86-64 and ARM64, with `SHA256SUMS.txt`. Unpack it and put `apollinaire` on your `PATH`.
+
+To build from source instead, install [Rust](https://www.rust-lang.org/tools/install), then:
 
 ```sh
-git clone https://github.com/EquityBot/ApollinairesASCII.git
-cd ApollinairesASCII
-cargo install --locked --path .
-ascii-forge art ghost
-ascii-forge text "RUST" --font block
-ascii-forge animate ghost --output ghost.json
-ascii-forge play ghost.json
-ascii-forge image photo.png --width 80 --dither --output photo.txt
-ascii-forge import ghost.json --format html --output ghost.html
+cargo install --locked --git https://github.com/EquityBot/ApollinairesASCII
+```
+
+```sh
+apollinaire art ghost
+apollinaire text "RUST" --font block
+apollinaire animate ghost --output ghost.json
+apollinaire play ghost.json
+apollinaire image photo.png --width 80 --dither --output photo.txt
+apollinaire import ghost.json --format html --output ghost.html
 ```
 
 The checked toolchain is pinned in `rust-toolchain.toml`. Existing output files are never overwritten. Static artwork defaults to text; animations default to JSON so frames and timings are retained. Use `--format text --frame 0` to deliberately select one animated frame.
@@ -52,7 +61,7 @@ The library has no browser or CLI dependency when default features are disabled:
 
 ```toml
 [dependencies]
-ascii-forge = { git = "https://github.com/EquityBot/ApollinairesASCII", default-features = false }
+apollinaires-ascii = { git = "https://github.com/EquityBot/ApollinairesASCII", default-features = false }
 
 [patch.crates-io]
 gif = { git = "https://github.com/image-rs/image-gif", rev = "e60e4dd7708cc50f9371185cefa04273f410f116" }
@@ -61,7 +70,7 @@ gif = { git = "https://github.com/image-rs/image-gif", rev = "e60e4dd7708cc50f93
 Include the patch in your application's workspace root whilst the upstream GIF fix awaits a stable release. Cargo does not inherit a dependency's patch section. The CLI and browser builds in this repository already apply it. See [dependency notes](docs/DEPENDENCIES.md).
 
 ```rust
-use ascii_forge::{Animation, Canvas, SceneOptions, animation};
+use apollinaires_ascii::{Animation, Canvas, SceneOptions, animation};
 
 fn main() -> Result<(), String> {
     let mut canvas = Canvas::new(24, 6)?;
@@ -84,7 +93,7 @@ fn main() -> Result<(), String> {
 ```sh
 cargo build --locked --release --target wasm32-unknown-unknown --no-default-features --features web
 cargo install --locked wasm-bindgen-cli --version 0.2.130
-wasm-bindgen target/wasm32-unknown-unknown/release/ascii_forge.wasm --target web --out-dir web/pkg --out-name ascii_forge
+wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --target web --out-dir web/pkg --out-name apollinaires_ascii
 ```
 
 Serve `web/` with a local HTTP server and open its URL. Opening `index.html` directly as a `file:` URL cannot load its WebAssembly module. GitHub Actions builds and deploys the same directory to GitHub Pages.

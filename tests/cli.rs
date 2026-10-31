@@ -2,7 +2,7 @@
 use std::io::Write;
 use std::process::Command;
 fn cli(args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_ascii-forge"))
+    Command::new(env!("CARGO_BIN_EXE_apollinaire"))
         .args(args)
         .output()
         .unwrap()
@@ -27,7 +27,8 @@ fn native_commands_emit_real_text_and_validate_input() {
     ]);
     assert!(animation.status.success());
     let project =
-        ascii_forge::Animation::from_json(std::str::from_utf8(&animation.stdout).unwrap()).unwrap();
+        apollinaires_ascii::Animation::from_json(std::str::from_utf8(&animation.stdout).unwrap())
+            .unwrap();
     assert_eq!(project.frames().len(), 3);
     let ambiguous = cli(&["animate", "ghost", "--format", "text"]);
     assert!(!ambiguous.status.success());
@@ -36,7 +37,7 @@ fn native_commands_emit_real_text_and_validate_input() {
 }
 #[test]
 fn output_files_are_never_overwritten_and_playback_refuses_redirection() {
-    let path = std::env::temp_dir().join(format!("ascii-forge-cli-{}.txt", std::process::id()));
+    let path = std::env::temp_dir().join(format!("apollinaire-cli-{}.txt", std::process::id()));
     std::fs::write(&path, "keep this").unwrap();
     let output = cli(&["art", "cat", "--output", path.to_str().unwrap()]);
     assert!(!output.status.success());
@@ -49,7 +50,7 @@ fn output_files_are_never_overwritten_and_playback_refuses_redirection() {
 
 #[test]
 fn stdin_ascii_can_start_with_an_opening_brace() {
-    let mut child = Command::new(env!("CARGO_BIN_EXE_ascii-forge"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_apollinaire"))
         .args(["import", "-"])
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())

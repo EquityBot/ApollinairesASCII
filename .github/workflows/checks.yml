@@ -38,7 +38,7 @@ jobs:
       - run: cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
       - run: cargo build --locked --release --target wasm32-unknown-unknown --no-default-features --features web
       - run: cargo install --locked wasm-bindgen-cli --version 0.2.130
-      - run: wasm-bindgen target/wasm32-unknown-unknown/release/ascii_forge.wasm --target web --out-dir web/pkg --out-name ascii_forge
+      - run: wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --target web --out-dir web/pkg --out-name apollinaires_ascii
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: web

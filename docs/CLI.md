@@ -1,26 +1,26 @@
 # CLI guide
 
-`ascii-forge --help` lists commands. Each command also accepts `--help`.
+`apollinaire --help` lists commands. Each command also accepts `--help`.
 
 ```sh
-ascii-forge list
-ascii-forge art cat --border --output cat.txt
-ascii-forge text "Hello" --font small --align center --width 72
-ascii-forge text "RUST" --font-file my-font.flf
-ascii-forge animate donut --width 72 --height 24 --frames 120 --fps 30 --output donut.json
-ascii-forge animate scroll --text "HELLO, FRIEND" --seed 42 --output scroll.html
-ascii-forge image photo.jpg --width 100 --ramp fine --gamma 1.2 --contrast 1.3 --dither
-ascii-forge image movie.gif --width 72 --output movie.json
-ascii-forge image logo.png --width 72 --edges --invert --background 255
-ascii-forge import art.txt --pad --format json --output art.json
-ascii-forge import movie.json --format html --output movie.html
-ascii-forge import movie.json --format text --frame 0 --output first.txt
-ascii-forge compose background.txt cat.txt --x 4 --y 2 --transparent-spaces
-ascii-forge transform movie.json horizontal --output flipped.json
-ascii-forge transform art.txt crop --x 2 --y 1 --width 20 --height 10
-ascii-forge transform art.txt border
-ascii-forge check movie.json
-ascii-forge play movie.json --loops 3
+apollinaire list
+apollinaire art cat --border --output cat.txt
+apollinaire text "Hello" --font small --align center --width 72
+apollinaire text "RUST" --font-file my-font.flf
+apollinaire animate donut --width 72 --height 24 --frames 120 --fps 30 --output donut.json
+apollinaire animate scroll --text "HELLO, FRIEND" --seed 42 --output scroll.html
+apollinaire image photo.jpg --width 100 --ramp fine --gamma 1.2 --contrast 1.3 --dither
+apollinaire image movie.gif --width 72 --output movie.json
+apollinaire image logo.png --width 72 --edges --invert --background 255
+apollinaire import art.txt --pad --format json --output art.json
+apollinaire import movie.json --format html --output movie.html
+apollinaire import movie.json --format text --frame 0 --output first.txt
+apollinaire compose background.txt cat.txt --x 4 --y 2 --transparent-spaces
+apollinaire transform movie.json horizontal --output flipped.json
+apollinaire transform art.txt crop --x 2 --y 1 --width 20 --height 10
+apollinaire transform art.txt border
+apollinaire check movie.json
+apollinaire play movie.json --loops 3
 ```
 
 `--output` creates a new file. An existing file causes an error, even when its contents are identical. Without it, exports go to stdout. Errors go to stderr and return a nonzero exit status. `check` reports validated dimensions and timing on stdout.
