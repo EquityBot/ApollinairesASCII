@@ -12,6 +12,7 @@
 pub mod animation;
 pub mod art;
 pub mod canvas;
+pub mod diagram;
 pub mod export;
 pub mod frame;
 pub mod image_renderer;

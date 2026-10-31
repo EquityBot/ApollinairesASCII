@@ -8,7 +8,7 @@ Local validation on 1 November 2026 used Rust 1.99.1, Windows MSVC, Linux x86_64
 | --- | --- |
 | Linux `cargo build --locked`, `cargo test --locked`, Clippy across all native targets with warnings denied and formatting | Passed |
 | Windows release build, native tests, Clippy across all native targets with warnings denied and formatting | Passed |
-| Native tests | 17 contract tests, 3 CLI integration tests and 1 documentation example passed |
+| Native tests | 17 contract tests, 9 drawing tests, 3 CLI integration tests and 2 documentation examples passed |
 | Library example | Compiled and ran successfully |
 | WebAssembly release build and Clippy with warnings denied | Passed with the `web` feature and default features disabled |
 | wasm-bindgen | Generated browser bindings using pinned CLI version 0.2.130 |
@@ -27,6 +27,7 @@ Headless Brave loaded and executed the generated WebAssembly module over local H
 - Printable DOM text, text selection and absence of canvas/image/SVG artwork elements.
 - Reduced-motion paused start, play/pause and frame stepping.
 - All 12 static templates, 6 lettering styles and 8 procedural scenes.
+- Drawing tools in the Chromium-based Claude Browser pane over local HTTP: pencil, eraser, line, rectangle, fill, typing, text stamps, and area select, move, cut, copy, paste (including text from the system clipboard) and clear. Diagram boxes, labels, connectors and arrowheads joined at corners and crossings. Every tool was also used by keyboard alone, and each step was undone and redone. Onion skin filled only blank cells, stayed out of text selection and hid during playback. A 375-pixel layout had no page-level horizontal overflow, controls at least 44 pixels high and pointer drawing on the grid.
 - Frame editing, padding, timing, duplication, reordering, flips, add/delete, undo/redo and clearing a frame.
 - Rejected Unicode and protection of unapplied edits.
 - Pending file reads disabling draft editing and failed imports preserving the current artwork.
@@ -45,6 +46,6 @@ These browser checks were local session checks, not a maintained cross-browser C
 
 There is no video decoder, webcam capture, network media fetching, ANSI-colour artwork mode, raster/vector artwork exporter or Unicode-art mode. GIF is the animated media import format; other media inputs use the image library's still-image decoding. Oversize inputs are refused. Browser work is synchronous Rust after the bounded file read, so large valid conversions may briefly occupy the UI thread. Resource limits bound accepted files and projects, not the browser process's total memory.
 
-The browser has bounded undo history and no automatic local persistence. Save a JSON project to retain all frames and timing. Text export saves one selected frame. Closing or reloading a modified project requests the browser's unsaved-work prompt; downloads are reported as requested because the page cannot prove where the browser saved a file. Requesting a download does not clear the unsaved-work warning.
+The browser keeps 20 undo steps within a 16 million cell budget and has no automatic local persistence. A drag, a keyboard stroke or a run of typed characters is one step. Onion skin shows only the previous frame, so the first frame has none. Drawing tools disable touch scrolling over the grid; choose Select text to scroll it by touch. Save a JSON project to retain all frames and timing. Text export saves one selected frame. Closing or reloading a modified project requests the browser's unsaved-work prompt; downloads are reported as requested because the page cannot prove where the browser saved a file. Requesting a download does not clear the unsaved-work warning.
 
 Calvino design review completed with verified GPT-6 and an Extra High fallback after the model picker showed Pro unavailable. Final publication review and hosted CI/deployment results are recorded in the publication handoff; local checks alone do not establish those external results.

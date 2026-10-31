@@ -28,7 +28,7 @@ Every frame contains bytes 32 through 126. Line feeds separate rows when saved a
 | Lettering | Standard, small, big, slant, block and outline styles; multiline text; alignment; plain FIGlet `.flf` import |
 | Animation | Ghost, rotating donut, wave, starfield, rain, fire, text reveal and scrolling text; deterministic seeds |
 | Media conversion | PNG, JPEG, GIF, WebP, BMP and PNM input; animated GIF timing; custom character ramps, aspect correction, transparency, inversion, gamma, contrast, dithering and edges |
-| Browser editor | Select/copy text, timeline, per-frame timing, frame insertion/duplication/deletion/reordering, undo/redo and local file imports |
+| Browser editor | Pencil, eraser, line, rectangle, fill, typing and area select/move/copy/paste on the character grid, each usable by keyboard; diagram mode for joined `+-|` boxes, labels and arrows; onion skin; select/copy text, timeline, per-frame timing, frame insertion/duplication/deletion/reordering, undo/redo and local file imports |
 | Export | Plain `.txt`, timed `.json` projects and standalone `.html` text players |
 | Native playback | Terminal playback with cursor movement; saved artwork remains plain text |
 
@@ -86,7 +86,7 @@ fn main() -> Result<(), String> {
 }
 ```
 
-`Frame` is an immutable rectangular ASCII grid. `Canvas` provides validated drawing; `Animation` owns equal-size frames, durations and loop behaviour. See [the format and limits](docs/FORMAT.md) and run `cargo doc --no-deps --open` for the API.
+`Frame` is an immutable rectangular ASCII grid. `Canvas` provides validated, clipped drawing, including flood fill and diagram boxes and arrows that join with `+`; `Animation` owns equal-size frames, durations and loop behaviour. See [the format and limits](docs/FORMAT.md) and run `cargo doc --no-deps --open` for the API.
 
 ## Build the browser editor
 
