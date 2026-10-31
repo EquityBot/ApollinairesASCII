@@ -1,19 +1,22 @@
 [package]
-name = "ascii-forge"
-version = "0.1.0"
+name = "apollinaires-ascii"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.99"
-publish = false
 license = "MIT"
 description = "Static art, block lettering and animation as real ASCII text"
 repository = "https://github.com/EquityBot/ApollinairesASCII"
+homepage = "https://equitybot.github.io/ApollinairesASCII/"
+readme = "README.md"
+categories = ["command-line-utilities", "multimedia::images", "text-processing", "wasm"]
+include = ["/src", "/tests", "/examples", "/LICENSES", "/README.md", "/LICENSE.md", "/THIRD_PARTY_NOTICES.md"]
 keywords = ["ascii", "art", "figlet", "animation", "wasm"]
 
 [lib]
 crate-type = ["rlib", "cdylib"]
 
 [[bin]]
-name = "ascii-forge"
+name = "apollinaire"
 path = "src/main.rs"
 required-features = ["cli"]
 

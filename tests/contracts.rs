@@ -1,4 +1,4 @@
-use ascii_forge::{
+use apollinaires_ascii::{
     Animation, Canvas, Frame, MAX_FRAMES, RenderOptions, SceneOptions, TimedFrame, animation, art,
     decode_media, export, lettering, render_image,
 };
@@ -270,8 +270,8 @@ fn imports_reject_large_or_malformed_structures_without_building_a_json_tree() {
         vec!["{\"text\":\"a\",\"duration_ms\":100}"; 601].join(",")
     );
     assert!(Animation::from_json(&too_many).is_err());
-    assert!(Frame::from_text(&"\n".repeat(ascii_forge::MAX_INPUT_BYTES)).is_err());
-    assert!(Frame::from_text_padded(&"\n".repeat(ascii_forge::MAX_INPUT_BYTES)).is_err());
+    assert!(Frame::from_text(&"\n".repeat(apollinaires_ascii::MAX_INPUT_BYTES)).is_err());
+    assert!(Frame::from_text_padded(&"\n".repeat(apollinaires_ascii::MAX_INPUT_BYTES)).is_err());
 }
 
 #[test]

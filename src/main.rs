@@ -1,4 +1,4 @@
-use ascii_forge::{
+use apollinaires_ascii::{
     Animation, Canvas, Frame, MAX_INPUT_BYTES, RenderOptions, Result, SceneOptions, TimedFrame,
     animation, art, export, lettering,
 };
@@ -12,6 +12,7 @@ use std::{
 
 #[derive(Parser)]
 #[command(
+    name = "apollinaire",
     version,
     about = "Static art, lettering and animation as real ASCII text"
 )]
@@ -152,7 +153,7 @@ enum Command {
 }
 fn main() {
     if let Err(error) = run(Args::parse()) {
-        eprintln!("ascii-forge: {error}");
+        eprintln!("apollinaire: {error}");
         std::process::exit(1);
     }
 }
@@ -164,7 +165,7 @@ fn run(args: Args) -> Result<()> {
                 art::NAMES.join(", "),
                 lettering::FONTS.join(", "),
                 animation::SCENES.join(", "),
-                ascii_forge::image_renderer::RAMPS
+                apollinaires_ascii::image_renderer::RAMPS
                     .iter()
                     .map(|(n, _)| *n)
                     .collect::<Vec<_>>()
@@ -210,11 +211,11 @@ fn run(args: Args) -> Result<()> {
             cell_aspect,
             background,
         } => {
-            let ramp = ascii_forge::image_renderer::RAMPS
+            let ramp = apollinaires_ascii::image_renderer::RAMPS
                 .iter()
                 .find(|(n, _)| *n == ramp)
                 .map_or(ramp.clone(), |(_, r)| r.to_string());
-            ascii_forge::decode_media(
+            apollinaires_ascii::decode_media(
                 &read_bounded(&input)?,
                 &RenderOptions {
                     width,
