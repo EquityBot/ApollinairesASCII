@@ -1,73 +1,60 @@
-//! # Usage:
-//! ```no_run
-//! use rascii_art::{
-//!     render_to,
-//!     RenderOptions,
-//! };
+//! Static art, lettering and animation as printable ASCII text.
 //!
-//! fn main() {
-//!     let mut buf = String::new();
-//!
-//!     render_to(
-//!         r"/path/to/image.png",
-//!         &mut buf,
-//!         &RenderOptions::new()
-//!             .width(100)
-//!             .colored(true)
-//!             .charset(&[".", ",", "-", "*", "£", "$", "#"]),
-//!     )
-//!     .unwrap();
-//! }
+//! ```
+//! use ascii_forge::{Frame, Animation};
+//! let frame = Frame::from_text(" /\\\n/  ")?;
+//! assert!(frame.text().is_ascii());
+//! let project = Animation::still(frame);
+//! assert_eq!(Animation::from_json(&project.to_json())?, project);
+//! # Ok::<(), String>(())
 //! ```
 
-pub mod charsets;
+pub mod animation;
+pub mod art;
+pub mod canvas;
+pub mod export;
+pub mod frame;
+pub mod image_renderer;
+pub mod lettering;
+mod project_json;
 
-mod gif_renderer;
-mod image_renderer;
-mod renderer;
+#[cfg(all(target_arch = "wasm32", feature = "web"))]
+mod web;
 
-use image::DynamicImage;
-use image_renderer::ImageRenderer;
-pub use renderer::RenderOptions;
-use renderer::Renderer;
-use std::{io, path::Path};
+pub use animation::{Animation, SceneOptions, TimedFrame};
+pub use canvas::Canvas;
+pub use frame::Frame;
+pub use image_renderer::{RenderOptions, decode_media, render_image};
 
-pub fn render<P: AsRef<Path> + AsRef<str>>(
-    path: P,
-    to: &mut impl io::Write,
-    options: &RenderOptions<'_>,
-) -> image::ImageResult<()> {
-    let image = &image::open(path)?;
-    render_image(image, to, options)
-}
+pub type Result<T> = std::result::Result<T, String>;
+pub const MAX_WIDTH: usize = 512;
+pub const MAX_HEIGHT: usize = 256;
+pub const MAX_CELLS: usize = MAX_WIDTH * MAX_HEIGHT;
+pub const MAX_FRAMES: usize = 600;
+pub const MAX_PROJECT_CELLS: usize = 8_000_000;
+pub const MAX_INPUT_BYTES: usize = 16 * 1024 * 1024;
 
-pub fn render_image(
-    image: &DynamicImage,
-    to: &mut impl io::Write,
-    options: &RenderOptions<'_>,
-) -> image::ImageResult<()> {
-    let renderer = ImageRenderer::new(image, options);
-    renderer.render_to(to)?;
+pub(crate) fn printable(bytes: &[u8]) -> Result<()> {
+    if let Some((index, byte)) = bytes
+        .iter()
+        .enumerate()
+        .find(|(_, b)| !(32..=126).contains(*b))
+    {
+        return Err(format!(
+            "Only printable ASCII is allowed: byte {index} is 0x{byte:02x}"
+        ));
+    }
     Ok(())
 }
 
-pub fn render_to<P: AsRef<Path> + AsRef<str>>(
-    path: P,
-    buffer: &mut String,
-    options: &RenderOptions<'_>,
-) -> image::ImageResult<()> {
-    let image = &image::open(path)?;
-    let renderer = ImageRenderer::new(image, options);
-    renderer.render(buffer)?;
-    Ok(())
-}
-
-pub fn render_image_to(
-    image: &DynamicImage,
-    buffer: &mut String,
-    options: &RenderOptions<'_>,
-) -> image::ImageResult<()> {
-    let renderer = ImageRenderer::new(image, options);
-    renderer.render(buffer)?;
-    Ok(())
+pub(crate) fn dimensions(width: usize, height: usize) -> Result<usize> {
+    if width == 0 || height == 0 || width > MAX_WIDTH || height > MAX_HEIGHT {
+        return Err(format!(
+            "Dimensions must be 1..={MAX_WIDTH} columns and 1..={MAX_HEIGHT} rows"
+        ));
+    }
+    width
+        .checked_mul(height)
+        .filter(|n| *n <= MAX_CELLS)
+        .ok_or_else(|| "Too many cells".into())
 }

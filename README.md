@@ -1,185 +1,109 @@
-<div align="center">
+# AsciiForge
 
-[![Crate Status](https://img.shields.io/crates/v/rascii_art.svg)](https://crates.io/crates/rascii_art)
-[![Docs Status](https://docs.rs/rascii_art/badge.svg)](https://docs.rs/crate/rascii_art/)
+Static art, block letters and animated scenes made of real, selectable ASCII characters. A Rust library, native CLI and browser editor share the same rendering and validation code.
 
-<p style="margin-bottom: 0 !important;">
-    <img alt="RASCII Logo" src="https://user-images.githubusercontent.com/101834410/204127025-b98aaf39-778b-468b-8f41-36fd858708e8.png" width=600>
-  </p>
-</div>
+[Open the browser editor](https://equitybot.github.io/AsciiForge/) · [CLI guide](docs/CLI.md) · [Library example](examples/library.rs) · [Research and provenance](docs/RESEARCH.md)
 
-```
-Advanced ASCII Art Generator
-
-Usage: rascii [OPTIONS] <FILENAME>
-
-Arguments:
-  <FILENAME>  Path to the image
-
-Options:
-  -w, --width <WIDTH>      Width of the output image. Defaults to 128 if width and height are not specified
-  -H, --height <HEIGHT>    Height of the output image, if not specified, it will be calculated to keep the aspect ratio
-  -c, --color              Whether to use colors in the output image
-  -i, --invert             Inverts the weights of the characters. Useful for white backgrounds
-  -C, --charset <CHARSET>  Characters used to render the image, from transparent to opaque. Built-in charsets: block, emoji, default, russian, slight [default: default]
-  -h, --help               Print help
-  -V, --version            Print version
+```text
+       .-.
+      (o o)
+      | O \
+       \   \
+        '~~~'
 ```
 
-## Features
+Every frame contains bytes 32 through 126. Line feeds separate rows when saved as text. The browser displays artwork in a `<pre>` using `textContent`. There are no image, SVG, canvas, Braille or Unicode block artwork outputs. Image files are accepted as conversion inputs.
 
-- **Available as a crate:** RASCII has a very simple API allowing you to use
-  RASCII from your programs without using the system shell.
+## What it does
 
-- **Colored ASCII art generation**: RASCII uses ANSI color codes to generate
-    colored ASCII art.
+| Area | Included |
+| --- | --- |
+| Static art | 12 original templates, blank canvases, character editing, borders, crops, flips and clipped composition |
+| Lettering | Standard, small, big, slant, block and outline styles; multiline text; alignment; plain FIGlet `.flf` import |
+| Animation | Ghost, rotating donut, wave, starfield, rain, fire, text reveal and scrolling text; deterministic seeds |
+| Media conversion | PNG, JPEG, GIF, WebP, BMP and PNM input; animated GIF timing; custom character ramps, aspect correction, transparency, inversion, gamma, contrast, dithering and edges |
+| Browser editor | Select/copy text, timeline, per-frame timing, frame insertion/duplication/deletion/reordering, undo/redo and local file imports |
+| Export | Plain `.txt`, timed `.json` projects and standalone `.html` text players |
+| Native playback | Terminal playback with cursor movement; saved artwork remains plain text |
 
-  <!-- deno-fmt-ignore -->
-  > [!NOTE]
-  > Your terminal emulator has to support `truecolor` (don't worry,
-  > almost all modern terminal emulators do).
+All maintained application logic is Rust, including the browser's DOM controls and file handling. HTML and CSS describe the interface. A small JavaScript loader starts WebAssembly; standalone HTML exports include a small JavaScript text player so each file works on its own.
 
-- **Super efficient colored output**: RASCII never repeats the same ANSI color
-  code if it is already active.
-  > This makes a huge difference in images with little alternating color, up to
-  > about 1800% reduction in output size. Woah!
+## Run the CLI
 
-- **Custom dimensions**: RASCII allows you to give custom dimensions to the
-  outputted ASCII art while keeping the aspect ratio (unless both dimensions are
-  provided).
-
-- **Custom charsets:** RASCII allows you to use custom charsets to generate your
-  ASCII art.
-
-<!-- deno-fmt-ignore -->
-> [!NOTE]
-> The given charset must go from transparent to opaque.
-
-- **Lots of pre-included charsets.**
-
-## Installing The CLI
-
-## Via Cargo
-
-<!--deno-fmt-ignore-->
-> [!NOTE]
-> This is the recommended way of installing the RASCII CLI.
-
-<!--deno-fmt-ignore-->
-> [!WARNING]
-> You must have `~/.cargo/bin/` in your `PATH` to run `rascii`
-> directly.
+Install [Rust](https://www.rust-lang.org/tools/install), then:
 
 ```sh
-cargo install rascii_art
+git clone https://github.com/EquityBot/AsciiForge.git
+cd AsciiForge
+cargo install --locked --path .
+ascii-forge art ghost
+ascii-forge text "RUST" --font block
+ascii-forge animate ghost --output ghost.json
+ascii-forge play ghost.json
+ascii-forge image photo.png --width 80 --dither --output photo.txt
+ascii-forge import ghost.json --format html --output ghost.html
 ```
 
-## Manually
+The checked toolchain is pinned in `rust-toolchain.toml`. Existing output files are never overwritten. Static artwork defaults to text; animations default to JSON so frames and timings are retained. Use `--format text --frame 0` to deliberately select one animated frame.
 
-<!--deno-fmt-ignore-->
-> [!WARNING]
-> this installation method is discouraged and only works for
-> GNU/Linux or any other POSIX compatible systems!
+## Use the library
 
-```sh
-curl -sL https://raw.githubusercontent.com/orhnk/RASCII/refs/heads/master/install.sh | sh
+The library has no browser or CLI dependency when default features are disabled:
+
+```toml
+[dependencies]
+ascii-forge = { git = "https://github.com/EquityBot/AsciiForge", default-features = false }
 ```
 
-## Using The Crate
+```rust
+use ascii_forge::{Animation, Canvas, SceneOptions, animation};
 
-Instead of using the unreliable system shell to call RASCII, you can add the
-`rascii_art` crate to your project and use it in Rust!
+fn main() -> Result<(), String> {
+    let mut canvas = Canvas::new(24, 6)?;
+    canvas.rectangle(0, 0, 24, 6, b'#')?;
+    canvas.text(3, 2, "HELLO, FRIEND")?;
+    let still = Animation::still(canvas.finish());
+    println!("{}", still.frames()[0].frame.text());
 
-To do so, run `cargo add rascii_art` to add RASCII to your Cargo project.
-
-Here is a code example:
-
-```rs
-use rascii_art::{
-    render_to,
-    RenderOptions,
-};
-                                                            
-fn main() {
-    let mut buffer = String::new();
-                                                            
-    render_to(
-        r"/path/to/image.png",
-        &mut buffer,
-        &RenderOptions::new()
-            .width(100)
-            .colored(true)
-            .charset(&[".", ",", "-", "*", "£", "$", "#"]),
-    )
-    .unwrap();
+    let moving = animation::generate("ghost", &SceneOptions::default())?;
+    let round_trip = Animation::from_json(&moving.to_json())?;
+    assert_eq!(moving, round_trip);
+    Ok(())
 }
 ```
 
-## Showcase
+`Frame` is an immutable rectangular ASCII grid. `Canvas` provides validated drawing; `Animation` owns equal-size frames, durations and loop behaviour. See [the format and limits](docs/FORMAT.md) and run `cargo doc --no-deps --open` for the API.
 
-### Japanese Charset
-
-<p align="center">
-    <img src="https://github.com/KoBruhh/RASCII/assets/101834410/c038edc9-cab3-4270-95df-0269203763fd">
-</p>
-
-### Emoji Charset
-
-<!--deno-fmt-ignore-->
-> [!NOTE]
-> The emoji charset does not guarantee your outputs color will match
-> the color of your image, this is just a coincidence that happened with Ferris.
-
-<p align="center">
-    <img src="https://user-images.githubusercontent.com/101834410/204243964-f4cfdf8d-10b9-4a2c-8d3c-41182320c789.png">
-</p>
-
-### Chinese Charset
-
-<p align="center">
-    <img src="https://github.com/KoBruhh/RASCII/assets/101834410/357c084f-ea93-40f9-baa8-16e329b95a51">
-</p>
-
-### Block Charset
-
-<p align="center">
-    <img src="https://github.com/KoBruhh/RASCII/assets/101834410/3ac7e920-7ab4-441d-886e-2028b108578d">
-</p>
-
-<!-- ![RASCII output of Ferris with the block charset](https://github.com/KoBruhh/RASCII/assets/101834410/5122c5ba-8707-489e-a720-caf2e183b026) -->
-
-### Custom ASCII Charset
-
-You can use the `--charset` (or `-C`) CLI option to provide a custom charset to
-use when generating some ASCII art.
-
-The value of this must option must go from transparent to opaque, like so:
+## Build the browser editor
 
 ```sh
-rascii --charset " ░▒▓█" --color ferris.png
+cargo build --locked --release --target wasm32-unknown-unknown --no-default-features --features web
+cargo install --locked wasm-bindgen-cli --version 0.2.130
+wasm-bindgen target/wasm32-unknown-unknown/release/ascii_forge.wasm --target web --out-dir web/pkg --out-name ascii_forge
 ```
 
-Note that a charset similar to the above charset is available as a builtin named
-`block`.
+Serve `web/` with a local HTTP server and open its URL. Opening `index.html` directly as a `file:` URL cannot load its WebAssembly module. GitHub Actions builds and deploys the same directory to GitHub Pages.
 
-<p align="center">
-    <img src="https://user-images.githubusercontent.com/101834410/204243768-4a15bb21-ba93-4979-bd4f-d8e8b1dc4112.png">
-</p>
+The editor processes uploads in your browser. It has no upload endpoint, account system, analytics or external font request. Playback starts paused when reduced motion is requested and pauses when the page is hidden. Save JSON to keep all frames and their timings; text export saves the selected frame.
 
-### Contributors
+## Checks
 
-![KoBruhh](https://github.com/KoBruhh/RASCII/assets/101834410/2b06a6b0-9cb9-448e-8979-4a5182e2e4b2)
-![RGBCube](https://github.com/KoBruhh/RASCII/assets/101834410/3e5b18c3-d7c8-4862-bee5-b5cf06c83994)
-![felixonmars](https://github.com/KoBruhh/RASCII/assets/101834410/66914a48-a5c5-4619-a46d-b99c77b3cd77)
-![fnordpig](https://github.com/fnordpig/RASCII/assets/1621189/5b3225f3-ae83-4ed3-a3fb-3d88de18f82e)
+```sh
+cargo fmt --all --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked
+cargo build --locked --release
+cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
+```
 
----
+The integration tests cover the ASCII contract, whitespace, drawing, all bundled styles and scenes, timing, round trips, malformed fonts, GIF preflight checks, resource limits, script-safe HTML and CLI file handling. CI runs the native checks on Linux and Windows and builds the browser module. See [validation](docs/VALIDATION.md) for the browser checks and known limits.
 
-<!--deno-fmt-ignore-->
-> [!NOTE]
-> There is a python script at repository root that can be used to generate
-> the above contributor ASCII Art.
->
-> ```sh
-> python contributors.py
-> ```
+## Foundation and licence
+
+AsciiForge retains the history of [orhnk/RASCII](https://github.com/orhnk/RASCII), starting at `8d33a3670e51298d530ab202090b212501310cdd`. Its MIT image-conversion approach is the foundation of the converter. The shared frame model, drawing, scenes, project format, editor and exporters are new Rust code. It is an evolution of a focused converter, not a claim that upstream supplied this whole toolkit.
+
+[Research](docs/RESEARCH.md) records 1,164 discovered repositories across 27 multilingual searches, the shortlist and why this foundation was selected. Discovery metadata is not a source audit of every result. No Ghostty animation artwork was copied.
+
+MIT for this repository's code. Preserve the [licence](LICENSE.md) and [third-party notices](THIRD_PARTY_NOTICES.md). Dependencies and bundled font data retain their own licences and notices.
+
+Hello, friend. Keep it in characters.

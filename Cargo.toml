@@ -1,23 +1,51 @@
 [package]
-name = "rascii_art"
-version = "0.4.5"
-authors = [ "UTFeight", "RGBCube" ]
-description = "Advanced ASCII Art Generator"
-repository = "https://github.com/UTFeight/RASCII"
-keywords = [ "ascii" ]
+name = "ascii-forge"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+publish = false
 license = "MIT"
-edition = "2021"
+description = "Static art, block lettering and animation as real ASCII text"
+repository = "https://github.com/EquityBot/AsciiForge"
+keywords = ["ascii", "art", "figlet", "animation", "wasm"]
 
-[dependencies]
-ansi_term = "0.12.1"
-clap = { version = "4.5.31", features = ["derive"] }
-image = "0.25.5"
-unicode-segmentation = "1.12.0"
-
+[lib]
+crate-type = ["rlib", "cdylib"]
 
 [[bin]]
-name = "rascii"
+name = "ascii-forge"
 path = "src/main.rs"
+required-features = ["cli"]
+
+[features]
+default = ["cli"]
+cli = ["dep:clap"]
+web = ["dep:wasm-bindgen", "dep:web-sys", "dep:js-sys", "dep:wasm-bindgen-futures"]
+
+[dependencies]
+clap = { version = "4.6.7", features = ["derive"], optional = true }
+figlet-rs = "1.0.0"
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "pnm"] }
+serde = "1"
+serde_json = "1"
+
+[patch.crates-io]
+# Official GIF fix uses weezl 0.2.1; remove this pin when a release includes it.
+gif = { git = "https://github.com/image-rs/image-gif", rev = "e60e4dd7708cc50f9371185cefa04273f410f116" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = { version = "=0.2.130", optional = true }
+wasm-bindgen-futures = { version = "0.4.80", optional = true }
+js-sys = { version = "0.3.107", optional = true }
+web-sys = { version = "0.3.107", optional = true, features = ["Window", "Document", "Element", "HtmlElement", "HtmlInputElement", "HtmlTextAreaElement", "HtmlSelectElement", "HtmlAnchorElement", "Event", "BeforeUnloadEvent", "EventTarget", "File", "FileList", "Blob", "BlobPropertyBag", "Url", "Navigator", "Clipboard", "MediaQueryList", "Performance", "VisibilityState"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+ref_option = "warn"
 
 [profile.release]
-strip = true
+lto = true
+codegen-units = 1
+strip = "debuginfo"
