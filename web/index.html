@@ -75,8 +75,35 @@
         </details>
       </aside>
       <section class="studio" aria-label="Artwork preview and timeline">
-        <div class="stage-head"><h2>Preview</h2><span id="dimensions">72 columns x 24 rows</span></div>
-        <div class="stage"><pre id="art" tabindex="0" aria-label="Selectable ASCII artwork"></pre></div>
+        <div class="stage-head"><h2>Preview</h2><span id="cursor-position" aria-live="polite"></span><span id="dimensions">72 columns x 24 rows</span></div>
+        <fieldset class="tools" id="tools">
+          <legend>Tool</legend>
+          <label class="check"><input type="radio" name="tool" value="select-text" checked> Select text</label>
+          <label class="check"><input type="radio" name="tool" value="pencil"> Pencil</label>
+          <label class="check"><input type="radio" name="tool" value="eraser"> Eraser</label>
+          <label class="check"><input type="radio" name="tool" value="line"> Line</label>
+          <label class="check"><input type="radio" name="tool" value="rectangle"> Rectangle</label>
+          <label class="check"><input type="radio" name="tool" value="fill"> Fill</label>
+          <label class="check"><input type="radio" name="tool" value="type"> Type</label>
+          <label class="check"><input type="radio" name="tool" value="area"> Select area</label>
+        </fieldset>
+        <p id="tool-help" class="hint">Select text: drag across the artwork, then copy it.</p>
+        <p class="hint">With the artwork focused, Ctrl+Z undoes and Ctrl+Y redoes every tool.</p>
+        <details id="tool-options" open>
+          <summary>Character, label and options</summary>
+          <div class="tool-options">
+          <div><label for="brush">Character</label><input id="brush" type="text" value="#" maxlength="1" autocomplete="off" spellcheck="false"></div>
+          <div><label for="stamp">Text and box label</label><input id="stamp" type="text" value="" maxlength="128" autocomplete="off" spellcheck="false"></div>
+          <button id="stamp-text" type="button" disabled>Stamp text</button>
+          <label class="check"><input id="diagram" type="checkbox"> Diagram mode: boxes and connectors</label>
+          <label class="check"><input id="arrow" type="checkbox" checked> Arrowheads on connectors</label>
+          <label class="check"><input id="onion-skin" type="checkbox"> Onion skin: show the previous frame</label>
+          </div>
+        </details>
+        <div class="actions">
+          <button id="area-copy" type="button" disabled>Copy area</button><button id="area-cut" type="button" disabled>Cut area</button><button id="area-paste" type="button" disabled>Paste at cursor</button><button id="area-clear" type="button" disabled>Clear area</button><button id="undo" type="button">Undo</button><button id="redo" type="button">Redo</button>
+        </div>
+        <div class="stage"><div class="grid" id="grid"><pre id="onion" aria-hidden="true" hidden></pre><div id="selection" class="selection" aria-hidden="true" hidden></div><pre id="art" tabindex="0" aria-label="Selectable ASCII artwork" aria-describedby="tool-help"></pre><div id="cursor" class="cursor" aria-hidden="true" hidden></div></div></div>
         <div class="transport">
           <button id="previous" type="button" disabled>Previous</button><button id="play" class="primary" type="button" disabled>Play</button><button id="next" type="button" disabled>Next</button>
           <output id="frame-count" for="timeline">Frame 1 / 80</output>
@@ -103,7 +130,7 @@
           <p>Use printable ASCII and line breaks. Short rows and missing rows are padded to the project dimensions. Apply your changes before switching frames.</p>
           <label for="editor">Selected frame</label><textarea id="editor" class="ascii-editor" rows="10" wrap="off" spellcheck="false"></textarea>
           <label for="duration">Frame duration (milliseconds)</label><input id="duration" type="number" min="10" max="60000" step="10" value="50">
-          <div class="actions"><button id="apply" class="primary" type="button">Apply edits</button><button id="discard" type="button">Discard edits</button><button id="undo" type="button">Undo</button><button id="redo" type="button">Redo</button></div>
+          <div class="actions"><button id="apply" class="primary" type="button">Apply edits</button><button id="discard" type="button">Discard edits</button></div>
           <div class="actions"><button id="add-frame" type="button">Add blank frame</button><button id="duplicate" type="button">Duplicate frame</button><button id="delete-frame" type="button">Delete frame</button><button id="move-left" type="button">Move earlier</button><button id="move-right" type="button">Move later</button></div>
           <div class="actions"><button id="flip-horizontal" type="button">Flip columns</button><button id="flip-vertical" type="button">Flip rows</button></div>
           <p>Undo history is limited to 16 million cells. Save the project to keep all frames and timings.</p>

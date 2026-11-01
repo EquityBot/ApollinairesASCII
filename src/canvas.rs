@@ -1,5 +1,15 @@
 use crate::{Frame, Result, dimensions, printable};
 
+/// Left column, top row, width and height of the rectangle whose opposite corners are `a` and `b`.
+pub fn bounds(a: (i32, i32), b: (i32, i32)) -> (i32, i32, usize, usize) {
+    (
+        a.0.min(b.0),
+        a.1.min(b.1),
+        (a.0.abs_diff(b.0) as usize).saturating_add(1),
+        (a.1.abs_diff(b.1) as usize).saturating_add(1),
+    )
+}
+
 /// Mutable ASCII drawing surface. Drawing outside the grid is clipped.
 #[derive(Clone, Debug)]
 pub struct Canvas {
@@ -21,6 +31,17 @@ impl Canvas {
             height: f.height(),
             cells: f.cells().to_vec(),
         }
+    }
+    pub fn width(&self) -> usize {
+        self.width
+    }
+    pub fn height(&self) -> usize {
+        self.height
+    }
+    /// The character at a cell, or `None` outside the grid.
+    pub fn get(&self, x: i32, y: i32) -> Option<u8> {
+        (x >= 0 && y >= 0 && (x as usize) < self.width && (y as usize) < self.height)
+            .then(|| self.cells[y as usize * self.width + x as usize])
     }
     pub fn set(&mut self, x: i32, y: i32, value: u8) -> Result<()> {
         printable(&[value])?;
@@ -115,6 +136,56 @@ impl Canvas {
             ((x, bottom), (x, y)),
         ] {
             self.line(a, b, value)?;
+        }
+        Ok(())
+    }
+    /// Set every cell of a solid rectangle, clipped to the grid.
+    pub fn fill_area(
+        &mut self,
+        x: i32,
+        y: i32,
+        width: usize,
+        height: usize,
+        value: u8,
+    ) -> Result<()> {
+        printable(&[value])?;
+        let span = |start: i32, length: usize, limit: usize| {
+            let end = i64::from(start).saturating_add(i64::try_from(length).unwrap_or(i64::MAX));
+            (i64::from(start).clamp(0, limit as i64) as usize)
+                ..(end.clamp(0, limit as i64) as usize)
+        };
+        let columns = span(x, width, self.width);
+        for row in span(y, height, self.height) {
+            let start = row * self.width;
+            self.cells[start + columns.start..start + columns.end].fill(value);
+        }
+        Ok(())
+    }
+    /// Replace the 4-connected run of identical characters containing a cell.
+    pub fn flood_fill(&mut self, x: i32, y: i32, value: u8) -> Result<()> {
+        printable(&[value])?;
+        let Some(target) = self.get(x, y).filter(|target| *target != value) else {
+            return Ok(());
+        };
+        let mut pending = vec![y as usize * self.width + x as usize];
+        while let Some(index) = pending.pop() {
+            if self.cells[index] != target {
+                continue;
+            }
+            self.cells[index] = value;
+            let (column, row) = (index % self.width, index / self.width);
+            if column > 0 {
+                pending.push(index - 1);
+            }
+            if column + 1 < self.width {
+                pending.push(index + 1);
+            }
+            if row > 0 {
+                pending.push(index - self.width);
+            }
+            if row + 1 < self.height {
+                pending.push(index + self.width);
+            }
         }
         Ok(())
     }

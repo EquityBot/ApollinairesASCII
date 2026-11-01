@@ -11,6 +11,7 @@ use web_sys::{
     HtmlTextAreaElement,
 };
 
+mod draw;
 mod media;
 
 thread_local! {static APP:RefCell<Option<App>>=const {RefCell::new(None)};}
@@ -27,6 +28,7 @@ struct App {
     font: Option<String>,
     undo: Vec<Animation>,
     redo: Vec<Animation>,
+    drawing: draw::Drawing,
     camera: Option<media::Camera>,
 }
 fn document() -> Document {
@@ -105,6 +107,7 @@ impl App {
     fn seek(&mut self, index: usize) {
         self.pause();
         self.selected = index;
+        self.reset_drawing();
         self.elapsed = self.project.frames()[..index]
             .iter()
             .map(|frame| f64::from(frame.duration_ms))
@@ -121,7 +124,7 @@ impl App {
         self.modified = true;
     }
     fn limit_history(&mut self) {
-        while self.undo.len() + self.redo.len() > 20
+        while self.undo.len() + self.redo.len() > 100
             || self
                 .undo
                 .iter()
@@ -139,7 +142,7 @@ impl App {
     }
     fn display(&self, editor: bool) -> Result<()> {
         let entry = &self.project.frames()[self.selected];
-        node::<Element>("art")?.set_text_content(Some(&entry.frame.text()));
+        self.render()?;
         node::<Element>("dimensions")?.set_text_content(Some(&format!(
             "{} columns x {} rows",
             self.project.width(),
@@ -252,6 +255,7 @@ pub fn start() -> std::result::Result<(), JsValue> {
             font: None,
             undo: vec![],
             redo: vec![],
+            drawing: draw::Drawing::default(),
             camera: None,
         })
     });
@@ -281,6 +285,7 @@ pub fn start() -> std::result::Result<(), JsValue> {
         listen(id, "click", move |_| report(action(id)))?;
     }
     listen("mode", "change", move |_| report(fields()))?;
+    draw::listen_all()?;
     fill_effects().map_err(|e| JsValue::from_str(&e))?;
     fill_art("").map_err(|e| JsValue::from_str(&e))?;
     listen("art-search", "input", move |_| {
@@ -504,21 +509,7 @@ fn action(id: &str) -> Result<()> {
             app.clean()?;
             Ok(app.project.frames()[app.selected].frame.text())
         })?;
-        spawn_local(async move {
-            let promise = web_sys::window()
-                .expect("Browser window")
-                .navigator()
-                .clipboard()
-                .write_text(&content);
-            if JsFuture::from(promise).await.is_ok() {
-                status("Frame copied as ASCII text.", false);
-            } else {
-                status(
-                    "Copy was blocked. Select the artwork and copy it with your keyboard.",
-                    true,
-                );
-            }
-        });
+        copy_text(content, "Frame copied as ASCII text.");
         return Ok(());
     }
     state(|app| {
@@ -548,6 +539,7 @@ fn action(id: &str) -> Result<()> {
             return Ok(());
         }
         app.clean()?;
+        app.drawing_cancel();
         match id {
             "generate" => return generate(app),
             "play" => {
@@ -652,6 +644,23 @@ fn action(id: &str) -> Result<()> {
         }
         app.display(true)
     })
+}
+fn copy_text(content: String, done: &'static str) {
+    spawn_local(async move {
+        let promise = web_sys::window()
+            .expect("Browser window")
+            .navigator()
+            .clipboard()
+            .write_text(&content);
+        if JsFuture::from(promise).await.is_ok() {
+            status(done, false);
+        } else {
+            status(
+                "Copy was blocked. Select the artwork and copy it with your keyboard.",
+                true,
+            );
+        }
+    });
 }
 fn apply_effect(app: &mut App) -> Result<()> {
     let source = app.project.frames()[app.selected].frame.clone();

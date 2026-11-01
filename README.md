@@ -30,7 +30,7 @@ Every frame contains bytes 32 through 126. Line feeds separate rows when saved a
 | Text effects | Reveal, typewriter, decrypt, scatter, wipes in 4 directions, rain, wave and burn, applied to any art or lettering, forwards or in reverse; set duration, FPS and seed |
 | Media conversion | PNG, JPEG, GIF, WebP, BMP and PNM input; animated GIF timing; custom character ramps, aspect correction, transparency, inversion, gamma, contrast, dithering and edges; CLI batches and `https://` URLs |
 | Video and camera | In the browser editor: any video the browser plays, sampled at 1 to 60 frames per second between chosen start and end times; a live text preview from the camera and timed recordings of 1 to 60 seconds |
-| Browser editor | Select/copy text, timeline, per-frame timing, frame insertion/duplication/deletion/reordering, undo/redo and local file imports |
+| Browser editor | Pencil, eraser, line, rectangle, fill, typing and area select/move/copy/paste on the character grid, each usable by keyboard; diagram mode for joined `+-|` boxes, labels and arrows; onion skin; select/copy text, timeline, per-frame timing, frame insertion/duplication/deletion/reordering, undo/redo and local file imports |
 | Export | Plain `.txt`, timed `.json` projects and standalone `.html` text players |
 | Native playback | Terminal playback with cursor movement; saved artwork remains plain text |
 
@@ -100,7 +100,7 @@ fn main() -> Result<(), String> {
 }
 ```
 
-`Frame` is an immutable rectangular ASCII grid. `Canvas` provides validated drawing; `Animation` owns equal-size frames, durations and loop behaviour. See [the format and limits](docs/FORMAT.md) and run `cargo doc --no-deps --open` for the API.
+`Frame` is an immutable rectangular ASCII grid. `Canvas` provides validated, clipped drawing, including flood fill and diagram boxes and arrows that join with `+`; `Animation` owns equal-size frames, durations and loop behaviour. See [the format and limits](docs/FORMAT.md) and run `cargo doc --no-deps --open` for the API.
 
 ## Build the browser editor
 
