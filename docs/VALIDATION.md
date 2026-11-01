@@ -16,7 +16,7 @@ Local validation on 1 November 2026 used Rust 1.99.1, Windows MSVC, Linux x86_64
 | GitHub workflow syntax | Passed actionlint |
 | Aikido source scan | Zero issues across 15 files; zero skipped paths |
 | Aikido dependency scan | Reachable weezl alert fixed; 5 remaining transitive alerts at that scan, 4 of them since removed with `figlet-rs`; see [dependency notes](DEPENDENCIES.md). Rescanned with the HTTPS client crates on 1 November 2026, no new alerts |
-| GIF decoder fuzzing | 1,027,670 inputs, no crash, timeout or out-of-memory failure: cargo-fuzz 0.13.2 with libFuzzer and AddressSanitizer on Windows MSVC, 6 workers for 15 minutes each, inputs up to 4 KB, from 15 seeds (11 real GIFs, 4 hand-built) to a 3,799-input corpus |
+| GIF decoder fuzzing | 1,027,670 executions, no crash, timeout or out-of-memory failure: cargo-fuzz 0.13.2 with libFuzzer and AddressSanitizer on Windows MSVC, 6 workers for 15 minutes each, inputs up to 4 KB, from 15 seeds (11 real GIFs, 4 hand-built) to a 3,799-input corpus |
 
 Contract tests cover every control/non-ASCII byte, trailing spaces and rectangular parsing, drawing and transforms, all 95 printable characters across the 6 styles, original templates and scenes, deterministic seeds, per-frame timing, JSON validation and round trips, GIF timing/truncation/preflight bounds, GIF decoding (transparency, disposal, interlacing, palettes, repeated clear codes and malformed LZW or block structure), image ramp modes, HTML injection strings and CLI output protection.
 

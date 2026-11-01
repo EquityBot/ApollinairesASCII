@@ -8,7 +8,7 @@
 The crate is `apollinaire-ascii` and the command is `apollinaire`. Install the CLI with
 `cargo install --locked apollinaire-ascii`, or download a release archive for Windows, macOS or Linux
 on x86-64 or ARM64 with `SHA256SUMS.txt` (from v0.3.0 also build provenance attestations). The browser
-editor at https://equitybot.github.io/ApollinaireASCII/ processes files locally and makes no network requests.
+editor at https://equitybot.github.io/ApollinaireASCII/ processes your files in the browser and uploads nothing.
 
 ## Start
 
