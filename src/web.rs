@@ -13,6 +13,8 @@ use web_sys::{
 
 mod draw;
 mod media;
+#[cfg(test)]
+mod tests;
 
 thread_local! {static APP:RefCell<Option<App>>=const {RefCell::new(None)};}
 struct App {

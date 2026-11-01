@@ -65,11 +65,16 @@ jobs:
           2dc9c7813f5375db93d96ead4b78222fcc3e2677bbb832297af4797782a37489  binaryen.tar.gz
           EOF
           mkdir -p "$HOME/.local/bin"
-          tar -xzf wasm-bindgen.tar.gz -C "$HOME/.local/bin" --strip-components=1 wasm-bindgen-0.2.130-x86_64-unknown-linux-musl/wasm-bindgen
+          tar -xzf wasm-bindgen.tar.gz -C "$HOME/.local/bin" --strip-components=1 wasm-bindgen-0.2.130-x86_64-unknown-linux-musl/wasm-bindgen wasm-bindgen-0.2.130-x86_64-unknown-linux-musl/wasm-bindgen-test-runner
           tar -xzf binaryen.tar.gz -C "$HOME/.local/bin" --strip-components=2 binaryen-version_133/bin/wasm-opt
           rm wasm-bindgen.tar.gz binaryen.tar.gz
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      - run: cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
+      - run: cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web --lib --tests -- -D warnings
+      # The runner image ships Chrome with a matching chromedriver.
+      - name: Editor tests in headless Chrome
+        run: CHROMEDRIVER="$CHROMEWEBDRIVER/chromedriver" cargo test --locked --target wasm32-unknown-unknown --no-default-features --features web --lib
+        env:
+          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER: wasm-bindgen-test-runner
       - run: cargo build --locked --release --target wasm32-unknown-unknown --no-default-features --features web
       - run: wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --target web --out-dir web/pkg --out-name apollinaires_ascii
       # -O3 rather than -Os or -Oz: it favours conversion speed over a few more kilobytes.

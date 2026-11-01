@@ -121,10 +121,11 @@ cargo fmt --all --check
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 cargo build --locked --release
-cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
+cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web --lib --tests -- -D warnings
+CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner cargo test --locked --target wasm32-unknown-unknown --no-default-features --features web --lib
 ```
 
-The integration tests cover the ASCII contract, whitespace, drawing, all bundled styles, scenes, effects and catalogue pieces, timing, round trips, malformed fonts, GIF preflight checks, video and camera frame sampling and timing, resource limits, script-safe HTML, CLI file handling and batch output, and URL limits against a local test server. CI runs the native checks on Linux and Windows and builds the browser module. See [validation](docs/VALIDATION.md) for the browser checks and known limits.
+The integration tests cover the ASCII contract, whitespace, drawing, all bundled styles, scenes, effects and catalogue pieces, timing, round trips, malformed fonts, GIF preflight checks, video and camera frame sampling and timing, resource limits, script-safe HTML, CLI file handling and batch output, and URL limits against a local test server. The editor tests in `src/web/tests.rs` load `web/index.html` and `web/style.css` in a headless browser and drive the page through pointer, keyboard and clipboard events: every drawing tool by pointer and by keyboard, diagram joins, onion skin, undo and redo, and the printable-ASCII contract of the artwork text. They need `wasm-bindgen-test-runner` from the pinned `wasm-bindgen-cli` 0.2.130 and `CHROMEDRIVER` set to a chromedriver matching an installed Chrome or Chromium. CI runs the native checks on Linux and Windows, runs the editor tests in headless Chrome on Linux and builds the browser module. See [validation](docs/VALIDATION.md) for the browser checks and known limits.
 
 ## Foundation and licence
 

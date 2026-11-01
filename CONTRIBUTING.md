@@ -16,7 +16,8 @@ Run these before opening a pull request:
 cargo fmt --all --check
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
-cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
+cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web --lib --tests -- -D warnings
+CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner cargo test --locked --target wasm32-unknown-unknown --no-default-features --features web --lib
 ```
 
-New features and bug fixes come with tests in `tests/` or a `#[cfg(test)]` module. For editor changes, build the browser module as the README describes, serve `web/` and check the change by hand, including keyboard use. CI runs the native checks on Linux and Windows and builds the editor.
+New features and bug fixes come with tests in `tests/` or a `#[cfg(test)]` module. Editor changes come with a case in `src/web/tests.rs`, driven by pointer and keyboard as a user would; the README lists what the browser tests need. Check layout and anything the suite cannot reach, such as the system clipboard, by hand in a served `web/`. CI runs the native checks on Linux and Windows, runs the editor tests in headless Chrome and builds the editor.
