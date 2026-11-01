@@ -11,6 +11,8 @@ use web_sys::{
     HtmlTextAreaElement,
 };
 
+mod media;
+
 thread_local! {static APP:RefCell<Option<App>>=const {RefCell::new(None)};}
 struct App {
     project: Animation,
@@ -25,6 +27,7 @@ struct App {
     font: Option<String>,
     undo: Vec<Animation>,
     redo: Vec<Animation>,
+    camera: Option<media::Camera>,
 }
 fn document() -> Document {
     web_sys::window()
@@ -86,6 +89,9 @@ impl App {
     fn clean(&self) -> Result<()> {
         if self.loading {
             return Err("A file is loading. Wait or choose another file.".into());
+        }
+        if self.camera.is_some() {
+            return Err("Turn the camera off before continuing.".into());
         }
         if self.dirty {
             return Err("Apply or discard the frame edits before continuing.".into());
@@ -156,6 +162,7 @@ impl App {
             node::<HtmlTextAreaElement>("editor")?.set_value(&entry.frame.text());
             input("duration")?.set_value(&entry.duration_ms.to_string());
         }
+        let busy = self.loading || self.camera.is_some();
         node::<Element>("play")?.set_text_content(Some(if self.playing {
             "Pause"
         } else {
@@ -179,7 +186,7 @@ impl App {
             "apply-effect",
         ] {
             let element = node::<Element>(id)?;
-            if self.loading {
+            if busy {
                 element
                     .set_attribute("disabled", "disabled")
                     .map_err(|_| "Cannot update controls")?;
@@ -190,20 +197,17 @@ impl App {
             }
         }
         for (id, disabled) in [
-            ("play", self.loading || self.project.frames().len() == 1),
-            ("previous", self.loading),
-            ("next", self.loading),
-            (
-                "delete-frame",
-                self.project.frames().len() == 1 || self.loading,
-            ),
-            ("move-left", self.selected == 0 || self.loading),
+            ("play", busy || self.project.frames().len() == 1),
+            ("previous", busy),
+            ("next", busy),
+            ("delete-frame", self.project.frames().len() == 1 || busy),
+            ("move-left", self.selected == 0 || busy),
             (
                 "move-right",
-                self.selected + 1 == self.project.frames().len() || self.loading,
+                self.selected + 1 == self.project.frames().len() || busy,
             ),
-            ("undo", self.undo.is_empty() || self.loading),
-            ("redo", self.redo.is_empty() || self.loading),
+            ("undo", self.undo.is_empty() || busy),
+            ("redo", self.redo.is_empty() || busy),
         ] {
             let element = node::<Element>(id)?;
             if disabled {
@@ -216,7 +220,7 @@ impl App {
                     .map_err(|_| "Cannot update controls")?;
             }
         }
-        Ok(())
+        media::controls(self)
     }
     fn update_frame(&mut self, frame: Frame, duration_ms: u32) -> Result<()> {
         let mut project = self.project.clone();
@@ -248,6 +252,7 @@ pub fn start() -> std::result::Result<(), JsValue> {
             font: None,
             undo: vec![],
             redo: vec![],
+            camera: None,
         })
     });
     for id in [
@@ -318,6 +323,7 @@ pub fn start() -> std::result::Result<(), JsValue> {
     for id in ["open-file", "font-file"] {
         listen(id, "change", move |_| begin_file(id))?;
     }
+    media::start()?;
     let visibility = Closure::<dyn FnMut(Event)>::new(move |_| {
         if document().hidden() {
             report(state(|app| {
@@ -741,6 +747,9 @@ fn begin_file(id: &'static str) {
         if app.dirty {
             return Err("Apply or discard frame edits before opening a file.".into());
         }
+        if app.camera.is_some() {
+            return Err("Turn the camera off before opening a file.".into());
+        }
         let file = input(id)?
             .files()
             .and_then(|files| files.get(0))
@@ -754,27 +763,10 @@ fn begin_file(id: &'static str) {
             return Err(format!("File exceeds the {} KiB input limit", limit / 1024));
         }
         let options = if id == "media-file" {
-            Some(RenderOptions {
-                width: number("width")?,
-                height: if checked("auto-height")? {
-                    None
-                } else {
-                    Some(number("height")?)
-                },
-                ramp: input("ramp")?.value(),
-                invert: checked("invert")?,
-                dither: checked("dither")?,
-                edges: checked("edges")?,
-                gamma: decimal("gamma")?,
-                contrast: decimal("contrast")?,
-                ..RenderOptions::default()
-            })
+            Some(render_options()?)
         } else {
             None
         };
-        if let Some(options) = &options {
-            options.validate()?;
-        }
         app.pause();
         app.loading = true;
         app.ticket = app.ticket.wrapping_add(1);
@@ -846,6 +838,26 @@ fn begin_file(id: &'static str) {
             report(state(|app| app.display(false)));
         }
     });
+}
+/// Validated conversion settings shared by image, video and camera input.
+fn render_options() -> Result<RenderOptions> {
+    let options = RenderOptions {
+        width: number("width")?,
+        height: if checked("auto-height")? {
+            None
+        } else {
+            Some(number("height")?)
+        },
+        ramp: input("ramp")?.value(),
+        invert: checked("invert")?,
+        dither: checked("dither")?,
+        edges: checked("edges")?,
+        gamma: decimal("gamma")?,
+        contrast: decimal("contrast")?,
+        ..RenderOptions::default()
+    };
+    options.validate()?;
+    Ok(options)
 }
 fn download(content: &str, name: &str, mime: &str) -> Result<()> {
     let parts = Array::new();

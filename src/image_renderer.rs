@@ -65,16 +65,21 @@ impl RenderOptions {
         }
         Ok(())
     }
+    /// Output rows for a source of this pixel size, from the fixed height or the aspect ratio.
+    pub fn output_height(&self, source_width: u32, source_height: u32) -> usize {
+        self.height.unwrap_or_else(|| {
+            ((self.width as f64 * f64::from(source_height) / f64::from(source_width)
+                * self.cell_aspect)
+                .ceil() as usize)
+                .max(1)
+        })
+    }
 }
 pub fn render_image(resource: &DynamicImage, options: &RenderOptions) -> Result<Frame> {
     options.validate()?;
     let (source_w, source_h) = (resource.width(), resource.height());
     check_pixels(source_w, source_h)?;
-    let height = options.height.unwrap_or_else(|| {
-        ((options.width as f64 * source_h as f64 / source_w as f64 * options.cell_aspect).ceil()
-            as usize)
-            .max(1)
-    });
+    let height = options.output_height(source_w, source_h);
     let count = dimensions(options.width, height)?;
     let resized = resource
         .resize_exact(
@@ -145,7 +150,7 @@ pub fn render_image(resource: &DynamicImage, options: &RenderOptions) -> Result<
     }
     Frame::new(options.width, height, cells)
 }
-fn check_pixels(width: u32, height: u32) -> Result<()> {
+pub(crate) fn check_pixels(width: u32, height: u32) -> Result<()> {
     if width == 0
         || height == 0
         || width > 4096
@@ -173,11 +178,7 @@ pub fn decode_media(bytes: &[u8], options: &RenderOptions) -> Result<Animation> 
     if format == ImageFormat::Gif {
         let (width, height, count) = inspect_gif(bytes)?;
         check_pixels(width, height)?;
-        let output_h = options.height.unwrap_or_else(|| {
-            ((options.width as f64 * height as f64 / width as f64 * options.cell_aspect).ceil()
-                as usize)
-                .max(1)
-        });
+        let output_h = options.output_height(width, height);
         let output_cells = dimensions(options.width, output_h)?;
         if count == 0
             || count > MAX_FRAMES
