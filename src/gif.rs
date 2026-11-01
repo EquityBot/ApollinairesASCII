@@ -318,6 +318,16 @@ mod tests {
         }
     }
 
+    #[test]
+    fn a_control_extension_uses_its_last_sub_block() {
+        let valid = gif(1, 1, Some(&[RED]), &[GifFrame::full(1, 1, vec![0], 3)]);
+        // Header 13 + table 6: the control block size is at 21. Put a 2-byte block first.
+        let mut split = valid[..21].to_vec();
+        split.extend([2, 0xaa, 0xbb]);
+        split.extend(&valid[21..]);
+        assert_eq!(frames(&split)[0].1, 3);
+    }
+
     /// A 2 x 1 GIF with a 4-colour table (red, green, black, black) and raw LZW data.
     fn raw(code_size: u8, lzw: [u8; 2]) -> Vec<u8> {
         let mut bytes = b"GIF89a\x02\x00\x01\x00\x81\x00\x00".to_vec();
