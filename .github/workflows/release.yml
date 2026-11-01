@@ -13,7 +13,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      - run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft --verify-tag --generate-notes --title "$GITHUB_REF_NAME"
+      # A rerun after a partial failure reuses the draft; a published release is never touched.
+      - run: |
+          if draft=$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2> /dev/null); then
+            if [ "$draft" != true ]; then
+              echo "::error::$GITHUB_REF_NAME is already published"
+              exit 1
+            fi
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft --verify-tag --generate-notes --title "$GITHUB_REF_NAME"
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -32,6 +41,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     defaults:
       run:
         shell: bash
@@ -44,21 +55,26 @@ jobs:
       - run: rustup target add ${{ matrix.target }}
       - run: cargo build --locked --release --target ${{ matrix.target }}
       - name: Package
+        env:
+          TARGET: ${{ matrix.target }}
         run: |
-          name="apollinaire-$GITHUB_REF_NAME-${{ matrix.target }}"
+          name="apollinaire-$GITHUB_REF_NAME-$TARGET"
           mkdir "$name"
           cp README.md LICENSE.md THIRD_PARTY_NOTICES.md "$name"/
           cp -r LICENSES "$name"/
-          if [[ "${{ matrix.target }}" == *windows* ]]; then
-            cp "target/${{ matrix.target }}/release/apollinaire.exe" "$name"/
+          if [[ "$TARGET" == *windows* ]]; then
+            cp "target/$TARGET/release/apollinaire.exe" "$name"/
             7z a "$name.zip" "$name" > /dev/null
             echo "ASSET=$name.zip" >> "$GITHUB_ENV"
           else
-            cp "target/${{ matrix.target }}/release/apollinaire" "$name"/
+            cp "target/$TARGET/release/apollinaire" "$name"/
             tar -czf "$name.tar.gz" "$name"
             echo "ASSET=$name.tar.gz" >> "$GITHUB_ENV"
           fi
-      - run: gh release upload "$GITHUB_REF_NAME" "$ASSET" --repo "$GITHUB_REPOSITORY"
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ env.ASSET }}
+      - run: gh release upload "$GITHUB_REF_NAME" "$ASSET" --repo "$GITHUB_REPOSITORY" --clobber
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -71,9 +87,9 @@ jobs:
       - name: Checksums
         run: |
           mkdir assets && cd assets
-          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY"
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern "apollinaire-$GITHUB_REF_NAME-*"
           sha256sum -- * > SHA256SUMS.txt
-          gh release upload "$GITHUB_REF_NAME" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY"
+          gh release upload "$GITHUB_REF_NAME" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false
         env:
           GH_TOKEN: ${{ github.token }}
