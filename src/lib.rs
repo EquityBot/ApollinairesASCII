@@ -17,6 +17,7 @@ pub mod frame;
 pub mod image_renderer;
 pub mod lettering;
 mod project_json;
+pub mod video;
 
 #[cfg(all(target_arch = "wasm32", feature = "web"))]
 mod web;

@@ -18,7 +18,7 @@ Static art, block letters and animated scenes made of real, selectable ASCII cha
         '~~~'
 ```
 
-Every frame contains bytes 32 through 126. Line feeds separate rows when saved as text. The browser displays artwork in a `<pre>` using `textContent`. There are no image, SVG, canvas, Braille or Unicode block artwork outputs. Image files are accepted as conversion inputs.
+Every frame contains bytes 32 through 126. Line feeds separate rows when saved as text. The browser displays artwork in a `<pre>` using `textContent`. There are no image, SVG, canvas, Braille or Unicode block artwork outputs. Image and video files and the browser camera are accepted as conversion inputs.
 
 ## What it does
 
@@ -28,6 +28,7 @@ Every frame contains bytes 32 through 126. Line feeds separate rows when saved a
 | Lettering | Standard, small, big, slant, block and outline styles; multiline text; alignment; plain FIGlet `.flf` import |
 | Animation | Ghost, rotating donut, wave, starfield, rain, fire, text reveal and scrolling text; deterministic seeds |
 | Media conversion | PNG, JPEG, GIF, WebP, BMP and PNM input; animated GIF timing; custom character ramps, aspect correction, transparency, inversion, gamma, contrast, dithering and edges |
+| Video and camera | In the browser editor: any video the browser plays, sampled at 1 to 60 frames per second between chosen start and end times; a live text preview from the camera and timed recordings of 1 to 60 seconds |
 | Browser editor | Select/copy text, timeline, per-frame timing, frame insertion/duplication/deletion/reordering, undo/redo and local file imports |
 | Export | Plain `.txt`, timed `.json` projects and standalone `.html` text players |
 | Native playback | Terminal playback with cursor movement; saved artwork remains plain text |
@@ -107,7 +108,7 @@ wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --tar
 
 Serve `web/` with a local HTTP server and open its URL. Opening `index.html` directly as a `file:` URL cannot load its WebAssembly module. GitHub Actions builds and deploys the same directory to GitHub Pages.
 
-The editor processes uploads in your browser. It has no upload endpoint, account system, analytics or external font request. Playback starts paused when reduced motion is requested and pauses when the page is hidden. Save JSON to keep all frames and their timings; text export saves the selected frame.
+The editor processes files in your browser. It has no upload endpoint, account system, analytics or external font request. The camera is requested only when you choose Camera on, and every camera track stops when you turn it off, finish a recording or hide or leave the page. Camera frames are never sent over the network. Playback starts paused when reduced motion is requested and pauses when the page is hidden. Save JSON to keep all frames and their timings; text export saves the selected frame.
 
 ## Checks
 
@@ -119,7 +120,7 @@ cargo build --locked --release
 cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
 ```
 
-The integration tests cover the ASCII contract, whitespace, drawing, all bundled styles and scenes, timing, round trips, malformed fonts, GIF preflight checks, resource limits, script-safe HTML and CLI file handling. CI runs the native checks on Linux and Windows and builds the browser module. See [validation](docs/VALIDATION.md) for the browser checks and known limits.
+The integration tests cover the ASCII contract, whitespace, drawing, all bundled styles and scenes, timing, round trips, malformed fonts, GIF preflight checks, video and camera frame sampling and timing, resource limits, script-safe HTML and CLI file handling. CI runs the native checks on Linux and Windows and builds the browser module. See [validation](docs/VALIDATION.md) for the browser checks and known limits.
 
 ## Foundation and licence
 
