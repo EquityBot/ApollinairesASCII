@@ -8,7 +8,7 @@
 
 Static art, block letters and animated scenes made of real, selectable ASCII characters. The `apollinaire-ascii` Rust library and CLI share their rendering and validation code with the browser editor.
 
-[Open the browser editor](https://equitybot.github.io/ApollinaireASCII/) · [CLI guide](docs/CLI.md) · [Library example](examples/library.rs) · [Research and provenance](docs/RESEARCH.md)
+[Open the browser editor](https://equitybot.github.io/ApollinaireASCII/) · [CLI guide](docs/CLI.md) · [Library example](examples/library.rs) · [API docs](https://docs.rs/apollinaire-ascii) · [crates.io](https://crates.io/crates/apollinaire-ascii) · [Research and provenance](docs/RESEARCH.md)
 
 ```text
        .-.
@@ -98,7 +98,7 @@ fn main() -> Result<(), String> {
 }
 ```
 
-`Frame` is an immutable rectangular ASCII grid. `Canvas` provides validated, clipped drawing, including flood fill and diagram boxes and arrows that join with `+`; `Animation` owns equal-size frames, durations and loop behaviour. See [the format and limits](docs/FORMAT.md) and run `cargo doc --no-deps --open` for the API.
+`Frame` is an immutable rectangular ASCII grid. `Canvas` provides validated, clipped drawing, including flood fill and diagram boxes and arrows that join with `+`; `Animation` owns equal-size frames, durations and loop behaviour. See [the format and limits](docs/FORMAT.md) and the [API documentation](https://docs.rs/apollinaire-ascii).
 
 ## Build the browser editor
 
