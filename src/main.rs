@@ -474,23 +474,24 @@ fn batch(
     if args.output.is_some() {
         return Err("Use either --output or --output-dir".into());
     }
-    let mut stems = Vec::with_capacity(inputs.len());
+    let mut names: Vec<String> = Vec::with_capacity(inputs.len());
     for input in inputs {
         if input == Path::new("-") {
             return Err("Stdin cannot be used with --output-dir".into());
         }
-        let stem = output_stem(input);
-        if stems.contains(&stem) {
+        let name = output_name(input);
+        // Case-insensitive file systems would put both inputs in one file.
+        if names.iter().any(|n| n.eq_ignore_ascii_case(&name)) {
             return Err(format!(
-                "Several inputs would be named {stem} in {}; convert them separately",
+                "Several inputs would be named {name} in {}; convert them separately",
                 dir.display()
             ));
         }
-        stems.push(stem);
+        names.push(name);
     }
     std::fs::create_dir_all(dir).map_err(|e| format!("Cannot create {}: {e}", dir.display()))?;
     let mut failed = 0;
-    for (input, stem) in inputs.iter().zip(&stems) {
+    for (input, stem) in inputs.iter().zip(&names) {
         let result = convert(input).and_then(|project| {
             let (format, content) = export(&project, args, None)?;
             let extension = match format {
@@ -515,8 +516,9 @@ fn batch(
     }
     Ok(())
 }
-/// A file stem of `[A-Za-z0-9._-]` from a path or the last segment of a URL path.
-fn output_stem(input: &Path) -> String {
+/// The input's file name, or the last segment of a URL path, as `[A-Za-z0-9._-]`. Keeping its
+/// extension lets `clip.png` and `clip.gif` share a batch as `clip.png.txt` and `clip.gif.json`.
+fn output_name(input: &Path) -> String {
     let text = input.to_string_lossy();
     let name = if fetch::is_url(&text) {
         let path = text.split(['?', '#']).next().unwrap_or_default();
@@ -533,11 +535,7 @@ fn output_stem(input: &Path) -> String {
             .map(|n| n.to_string_lossy().into_owned())
             .unwrap_or_default()
     };
-    let stem = Path::new(&name)
-        .file_stem()
-        .map(|s| s.to_string_lossy().into_owned())
-        .unwrap_or_default();
-    let clean: String = stem
+    let clean: String = name
         .chars()
         .map(|c| {
             if c.is_ascii_alphanumeric() || "._-".contains(c) {

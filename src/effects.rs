@@ -23,7 +23,8 @@ pub const EFFECTS: &[&str] = &[
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EffectOptions {
-    /// Total length; the frame count is `duration_ms * fps / 1000`, rounded up.
+    /// Total length, shared between the frames; the frame count is `duration_ms * fps / 1000`,
+    /// rounded up, and at least 2.
     pub duration_ms: u32,
     pub fps: u32,
     pub seed: u32,
@@ -154,9 +155,12 @@ pub fn apply(effect: &str, source: &Frame, options: &EffectOptions) -> Result<An
                 }
             }
         }
+        // Spread the remainder over the first frames so the durations sum to duration_ms.
+        let share = options.duration_ms / count as u32;
+        let extra = u32::from(index < options.duration_ms as usize % count);
         frames.push(TimedFrame {
             frame: Frame::new(width, height, cells)?,
-            duration_ms: 1000 / options.fps,
+            duration_ms: share + extra,
         });
     }
     Animation::new(frames, false)

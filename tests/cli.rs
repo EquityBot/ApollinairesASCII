@@ -143,7 +143,7 @@ fn image_batches_create_one_file_per_input_and_never_overwrite() {
     let dir = scratch("batch");
     let picture = |name: &str| {
         let path = dir.join(name);
-        image::DynamicImage::new_luma8(16, 8).save(&path).unwrap();
+        image::DynamicImage::new_rgba8(16, 8).save(&path).unwrap();
         path.to_str().unwrap().to_string()
     };
     let (a, b) = (picture("a.png"), picture("b.png"));
@@ -157,18 +157,18 @@ fn image_batches_create_one_file_per_input_and_never_overwrite() {
 
     let first = cli(&["image", &a, &b, "--width", "8", "--output-dir", out_arg]);
     assert!(first.status.success(), "{}", text(&first.stderr));
-    let a_text = std::fs::read(out.join("a.txt")).unwrap();
+    let a_text = std::fs::read(out.join("a.png.txt")).unwrap();
     assert!(a_text.iter().all(|b| *b == b'\n' || (32..=126).contains(b)));
-    assert!(out.join("b.txt").exists());
+    assert!(out.join("b.png.txt").exists());
     assert_eq!(text(&first.stdout).lines().count(), 2);
 
-    std::fs::write(out.join("b.txt"), "keep this").unwrap();
+    std::fs::write(out.join("b.png.txt"), "keep this").unwrap();
     let again = cli(&["image", &a, &b, "--width", "8", "--output-dir", out_arg]);
     assert!(!again.status.success());
     assert!(text(&again.stderr).contains("2 of 2 inputs failed"));
-    assert_eq!(std::fs::read(out.join("a.txt")).unwrap(), a_text);
+    assert_eq!(std::fs::read(out.join("a.png.txt")).unwrap(), a_text);
     assert_eq!(
-        std::fs::read_to_string(out.join("b.txt")).unwrap(),
+        std::fs::read_to_string(out.join("b.png.txt")).unwrap(),
         "keep this"
     );
 
@@ -184,7 +184,7 @@ fn image_batches_create_one_file_per_input_and_never_overwrite() {
     ]);
     assert!(!mixed.status.success());
     assert!(text(&mixed.stderr).contains("notes.png"));
-    assert!(partial.join("a.txt").exists() && !partial.join("notes.txt").exists());
+    assert!(partial.join("a.png.txt").exists() && !partial.join("notes.png.txt").exists());
 
     let clash = dir.join("clash");
     let same = cli(&[
@@ -196,6 +196,23 @@ fn image_batches_create_one_file_per_input_and_never_overwrite() {
     ]);
     assert!(!same.status.success());
     assert!(!clash.exists());
+    let upper = picture("A.PNG");
+    let case = cli(&["image", &a, &upper, "--output-dir", clash.to_str().unwrap()]);
+    assert!(text(&case.stderr).contains("Several inputs would be named"));
+    assert!(!clash.exists());
+    let gif = picture("a.gif");
+    let kinds = dir.join("kinds");
+    let both = cli(&[
+        "image",
+        &a,
+        &gif,
+        "--width",
+        "8",
+        "--output-dir",
+        kinds.to_str().unwrap(),
+    ]);
+    assert!(both.status.success(), "{}", text(&both.stderr));
+    assert!(kinds.join("a.png.txt").exists() && kinds.join("a.gif.txt").exists());
     assert!(!cli(&["image", &a, &b]).status.success());
     assert!(
         !cli(&["image", "-", &a, "--output-dir", out_arg])

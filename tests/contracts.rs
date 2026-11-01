@@ -240,9 +240,15 @@ fn check_effect(name: &str, source: &Frame, options: &EffectOptions) -> Animatio
             (entry.frame.width(), entry.frame.height()),
             (source.width(), source.height())
         );
-        assert_eq!(entry.duration_ms, 1000 / options.fps);
+        let share = options.duration_ms / result.frames().len() as u32;
+        assert!((share..=share + 1).contains(&entry.duration_ms), "{name}");
         ascii(&entry.frame);
     }
+    assert_eq!(
+        result.duration_ms(),
+        u64::from(options.duration_ms),
+        "{name}"
+    );
     let last = &result.frames().last().unwrap().frame;
     if name == "burn" {
         assert_eq!(
@@ -268,7 +274,7 @@ fn every_effect_animates_any_art_into_equal_ascii_frames() {
     ];
     for name in effects::EFFECTS {
         for (index, source) in sources.iter().enumerate() {
-            for (duration_ms, fps) in [(1000, 20), (100, 1), (2500, 60), (777, 13)] {
+            for (duration_ms, fps) in [(1000, 20), (100, 1), (100, 60), (2500, 60), (777, 13)] {
                 let options = EffectOptions {
                     duration_ms,
                     fps,
