@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest a font, scene, effect or tool.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you would like to make
+      description: Describe the art or workflow. Output must stay printable ASCII.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: A sample of the ASCII you have in mind, or a project that does it well.
