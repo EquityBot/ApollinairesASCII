@@ -109,6 +109,7 @@ fn video_element() -> Result<HtmlVideoElement> {
 async fn wait(target: &EventTarget, event: &str, failure: &str) -> Result<()> {
     let abort = AbortController::new().map_err(|_| "This browser cannot track media events")?;
     let mut timer = None;
+    let mut own = None;
     let promise = Promise::new(&mut |resolve, reject| {
         let options = AddEventListenerOptions::new();
         options.set_once(true);
@@ -122,10 +123,19 @@ async fn wait(target: &EventTarget, event: &str, failure: &str) -> Result<()> {
         timer = window()
             .set_timeout_with_callback_and_timeout_and_arguments_0(&reject, WAIT_MS)
             .ok();
-        WAITING.with(|waiting| *waiting.borrow_mut() = Some(reject));
+        // Only the current conversion waits; an older wait belongs to a superseded one.
+        if let Some(stale) = WAITING.with(|waiting| waiting.replace(Some(reject.clone()))) {
+            let _ = stale.call0(&JsValue::NULL);
+        }
+        own = Some(reject);
     });
     let outcome = JsFuture::from(promise).await;
-    WAITING.with(|waiting| waiting.borrow_mut().take());
+    WAITING.with(|waiting| {
+        let mut waiting = waiting.borrow_mut();
+        if waiting.as_ref() == own.as_ref() {
+            *waiting = None;
+        }
+    });
     abort.abort();
     if let Some(timer) = timer {
         window().clear_timeout_with_handle(timer);
