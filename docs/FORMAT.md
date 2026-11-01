@@ -19,7 +19,9 @@ All fields are required and no additional or duplicate fields are accepted. JSON
 | Total project cells | 8,000,000 |
 | Frame duration | 10 to 60,000 ms |
 | Project duration | One hour |
+| Effect duration | 100 to 60,000 ms at 1 to 60 FPS |
 | File input | 16 MiB |
+| CLI URL input | `https://` only, 16 MiB, 30 seconds, 5 redirects, `image/` content type |
 | Media dimensions | 4,096 per side, 16,777,216 pixels |
 | Image decoder allocation limit | 128 MiB |
 | GIF logical-screen pixels across frames | 64,000,000 |

@@ -312,7 +312,7 @@ fn field(c: &mut Canvas, o: &SceneOptions, p: f64, fire: bool) -> Result<()> {
     }
     Ok(())
 }
-fn random(seed: u32, index: u32) -> f64 {
+pub(crate) fn random(seed: u32, index: u32) -> f64 {
     let mut v = seed.wrapping_add(index.wrapping_mul(0x9e3779b9));
     v = (v ^ (v >> 16)).wrapping_mul(0x85ebca6b);
     v = (v ^ (v >> 13)).wrapping_mul(0xc2b2ae35);

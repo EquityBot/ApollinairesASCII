@@ -22,7 +22,7 @@ required-features = ["cli"]
 
 [features]
 default = ["cli"]
-cli = ["dep:clap"]
+cli = ["dep:clap", "dep:ureq"]
 web = ["dep:wasm-bindgen", "dep:web-sys", "dep:js-sys", "dep:wasm-bindgen-futures"]
 
 [dependencies]
@@ -31,6 +31,7 @@ figlet-rs = "1.0.0"
 image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "pnm"] }
 serde = "1"
 serde_json = "1"
+ureq = { version = "3.5.0", default-features = false, features = ["rustls"], optional = true }
 
 [patch.crates-io]
 # Official GIF fix uses weezl 0.2.1; remove this pin when a release includes it.
