@@ -24,10 +24,11 @@ Every frame contains bytes 32 through 126. Line feeds separate rows when saved a
 
 | Area | Included |
 | --- | --- |
-| Static art | 12 original templates, blank canvases, character editing, borders, crops, flips and clipped composition |
+| Static art | 89 original pieces in 7 categories (animals, nature, objects, characters, borders and dividers, emoticons, banners), searchable by name or tag; blank canvases, character editing, borders, crops, flips and clipped composition |
 | Lettering | Standard, small, big, slant, block and outline styles; multiline text; alignment; plain FIGlet `.flf` import |
 | Animation | Ghost, rotating donut, wave, starfield, rain, fire, text reveal and scrolling text; deterministic seeds |
-| Media conversion | PNG, JPEG, GIF, WebP, BMP and PNM input; animated GIF timing; custom character ramps, aspect correction, transparency, inversion, gamma, contrast, dithering and edges |
+| Text effects | Reveal, typewriter, decrypt, scatter, wipes in 4 directions, rain, wave and burn, applied to any art or lettering, forwards or in reverse; set duration, FPS and seed |
+| Media conversion | PNG, JPEG, GIF, WebP, BMP and PNM input; animated GIF timing; custom character ramps, aspect correction, transparency, inversion, gamma, contrast, dithering and edges; CLI batches and `https://` URLs |
 | Video and camera | In the browser editor: any video the browser plays, sampled at 1 to 60 frames per second between chosen start and end times; a live text preview from the camera and timed recordings of 1 to 60 seconds |
 | Browser editor | Select/copy text, timeline, per-frame timing, frame insertion/duplication/deletion/reordering, undo/redo and local file imports |
 | Export | Plain `.txt`, timed `.json` projects and standalone `.html` text players |
@@ -56,10 +57,13 @@ cargo install --locked --git https://github.com/EquityBot/ApollinaireASCII
 
 ```sh
 apollinaire art ghost
+apollinaire list --tag bird
 apollinaire text "RUST" --font block
 apollinaire animate ghost --output ghost.json
+apollinaire text "HELLO" --font block | apollinaire effect decrypt - --output hello.json
 apollinaire play ghost.json
 apollinaire image photo.png --width 80 --dither --output photo.txt
+apollinaire image a.png b.gif https://example.com/c.png --width 72 --output-dir ascii
 apollinaire import ghost.json --format html --output ghost.html
 ```
 
@@ -108,7 +112,7 @@ wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --tar
 
 Serve `web/` with a local HTTP server and open its URL. Opening `index.html` directly as a `file:` URL cannot load its WebAssembly module. GitHub Actions builds and deploys the same directory to GitHub Pages.
 
-The editor processes files in your browser. It has no upload endpoint, account system, analytics or external font request. The camera is requested only when you choose Camera on, and every camera track stops when you turn it off, finish a recording or hide or leave the page. Camera frames are never sent over the network. Playback starts paused when reduced motion is requested and pauses when the page is hidden. Save JSON to keep all frames and their timings; text export saves the selected frame.
+The editor processes files in your browser. It has no upload endpoint, account system, analytics or external font request. The camera is requested only when you choose Camera on, and every camera track stops when you turn it off, finish a recording or hide or leave the page. Camera frames are never sent over the network. The library and editor make no network requests; only the CLI downloads, and only an `https://` image URL you pass to `apollinaire image`. Playback starts paused when reduced motion is requested and pauses when the page is hidden. Save JSON to keep all frames and their timings; text export saves the selected frame.
 
 ## Checks
 
@@ -120,7 +124,7 @@ cargo build --locked --release
 cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
 ```
 
-The integration tests cover the ASCII contract, whitespace, drawing, all bundled styles and scenes, timing, round trips, malformed fonts, GIF preflight checks, video and camera frame sampling and timing, resource limits, script-safe HTML and CLI file handling. CI runs the native checks on Linux and Windows and builds the browser module. See [validation](docs/VALIDATION.md) for the browser checks and known limits.
+The integration tests cover the ASCII contract, whitespace, drawing, all bundled styles, scenes, effects and catalogue pieces, timing, round trips, malformed fonts, GIF preflight checks, video and camera frame sampling and timing, resource limits, script-safe HTML, CLI file handling and batch output, and URL limits against a local test server. CI runs the native checks on Linux and Windows and builds the browser module. See [validation](docs/VALIDATION.md) for the browser checks and known limits.
 
 ## Foundation and licence
 

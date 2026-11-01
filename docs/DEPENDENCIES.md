@@ -21,6 +21,10 @@ The ZIP dependency's file/byte loading APIs invoke archive support; Apollinaires
 
 At this check, the latest stable `image` and `figlet-rs` releases still require the older dependency ranges. The 5 alerts remain visible and are not ignored or snoozed in the scanner. Reassess these conclusions when adding archive APIs, ICC colour management or changing the dependency graph. Upgrade through upstream releases when compatible fixes become available.
 
+## CLI HTTPS client
+
+`ureq` 3.5.0 downloads `https://` image URLs for `apollinaire image`. It is optional and enabled only by the `cli` feature, with its gzip support off and the `rustls` TLS backend, which brings `ring` and the `webpki-roots` certificate bundle. The library built with `default-features = false` and the browser module do not compile it. Responses are limited to 16 MiB, 30 seconds, 5 redirects, HTTPS throughout and an `image/` content type before the bytes reach the same image decoder and limits as local files. These crates were added after the Aikido scans above and have not been scanned by it.
+
 ## Source scan
 
 Aikido scanned the 11 Rust source files, browser HTML/CSS and 2 GitHub configuration files: 15 files, zero issues and zero skipped paths. This automated result complements the contract tests and independent code reviews; it is not an assurance that every possible defect was found.

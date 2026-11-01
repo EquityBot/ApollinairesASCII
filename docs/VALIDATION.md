@@ -8,7 +8,7 @@ Local validation on 1 November 2026 used Rust 1.99.1, Windows MSVC, Linux x86_64
 | --- | --- |
 | Linux `cargo build --locked`, `cargo test --locked`, Clippy across all native targets with warnings denied and formatting | Passed |
 | Windows release build, native tests, Clippy across all native targets with warnings denied and formatting | Passed |
-| Native tests | 17 contract tests, 8 video and camera sampling tests, 3 CLI integration tests and 1 documentation example passed |
+| Native tests | 20 contract tests, 8 video and camera sampling tests, 5 CLI integration tests, 5 CLI download tests and 1 documentation example passed |
 | Library example | Compiled and ran successfully |
 | WebAssembly release build and Clippy with warnings denied | Passed with the `web` feature and default features disabled |
 | wasm-bindgen | Generated browser bindings using pinned CLI version 0.2.130 |
@@ -17,6 +17,10 @@ Local validation on 1 November 2026 used Rust 1.99.1, Windows MSVC, Linux x86_64
 | Aikido dependency scan | Reachable weezl alert fixed; 5 remaining transitive alerts documented in [dependency notes](DEPENDENCIES.md) |
 
 Contract tests cover every control/non-ASCII byte, trailing spaces and rectangular parsing, drawing and transforms, all 95 printable characters across the 6 styles, original templates and scenes, deterministic seeds, per-frame timing, JSON validation and round trips, GIF timing/truncation/preflight bounds, image ramp modes, HTML injection strings and CLI output protection.
+
+Effect tests run all 11 effects on catalogue art, block lettering, single characters and a blank frame at 4 duration and FPS settings. They check the frame count, equal dimensions, printable ASCII, determinism, seed use, the final frame and the duration, FPS and cell limits. Catalogue tests check at least 60 uniquely named pieces, valid categories and tags, size, trimmed edge rows and tag search. CLI tests cover `list --tag`, effects from files and stdin, batch conversion, collision and overwrite refusal, partial failure reporting and plain-HTTP refusal. Download tests use a loopback test server, never the internet, for image content, a non-image content type, oversized bodies with and without a length, and a timeout.
+
+Browser checks for the effects release used the in-app browser over local HTTP: all 11 effects applied to the selected frame and undone, an over-budget effect refused with a visible error, catalogue search by tag with grouped results and an empty-result message, the timeline reaching the unchanged final frame, no canvas, SVG or image elements and no console errors.
 
 Independent code reviews found defects in JSON allocation, frame line allocation, GIF rectangles, font markers, ambiguous stdin, asynchronous edits, empty-frame editing and preview overflow. They were repaired and checked. The malformed-font, GIF-rectangle and duplicate-project-field tests reproduced their failures before repair; browser probes likewise reproduced editable-during-load, empty-edit rejection and negative tall-preview positioning before repair.
 
@@ -54,7 +58,7 @@ The machine has no camera, and the editor correctly reported 'No camera was foun
 
 ## Deliberate limits
 
-The Rust code contains no video decoder: the browser decodes video, so supported formats vary by browser, and the CLI has no video or camera input. There is no network media fetching, ANSI-colour artwork mode, raster/vector artwork exporter or Unicode-art mode. GIF is the animated image import format; other image inputs use the image library's still-image decoding. Oversize inputs are refused. Browser work is synchronous Rust after the bounded file read, so large valid conversions may briefly occupy the UI thread. Resource limits bound accepted files and projects, not the browser process's total memory.
+The Rust code contains no video decoder: the browser decodes video, so supported formats vary by browser, and the CLI has no video or camera input. Only the CLI fetches media over the network, from `https://` image URLs. There is no ANSI-colour artwork mode, raster/vector artwork exporter or Unicode-art mode. GIF is the animated image import format; other image inputs use the image library's still-image decoding. Oversize inputs are refused. Browser work is synchronous Rust after the bounded file read, so large valid conversions may briefly occupy the UI thread. Resource limits bound accepted files and projects, not the browser process's total memory.
 
 The browser has bounded undo history and no automatic local persistence. Save a JSON project to retain all frames and timing. Text export saves one selected frame. Closing or reloading a modified project requests the browser's unsaved-work prompt; downloads are reported as requested because the page cannot prove where the browser saved a file. Requesting a download does not clear the unsaved-work warning.
 

@@ -61,6 +61,7 @@ jobs:
           name="apollinaire-$GITHUB_REF_NAME-$TARGET"
           mkdir "$name"
           cp README.md LICENSE.md THIRD_PARTY_NOTICES.md "$name"/
+          cp web/THIRD_PARTY_NOTICES.txt "$name/DEPENDENCY_NOTICES.txt"
           cp -r LICENSES "$name"/
           if [[ "$TARGET" == *windows* ]]; then
             cp "target/$TARGET/release/apollinaire.exe" "$name"/
