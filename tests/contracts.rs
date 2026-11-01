@@ -279,8 +279,24 @@ fn every_effect_animates_any_art_into_equal_ascii_frames() {
                     duration_ms,
                     fps,
                     seed: 7,
+                    reverse: false,
                 };
                 let result = check_effect(name, source, &options);
+                let backwards = EffectOptions {
+                    reverse: true,
+                    ..options
+                };
+                let reversed = effects::apply(name, source, &backwards).unwrap();
+                assert!(!reversed.looping());
+                assert_eq!(reversed.duration_ms(), result.duration_ms());
+                assert!(
+                    reversed.frames().iter().map(|f| &f.frame).eq(result
+                        .frames()
+                        .iter()
+                        .rev()
+                        .map(|f| &f.frame)),
+                    "{name} reversed"
+                );
                 if index < 3 && fps >= 13 {
                     assert!(
                         result.frames().windows(2).any(|p| p[0].frame != p[1].frame),
@@ -342,7 +358,7 @@ fn effect_options_and_budgets_are_enforced() {
         EffectOptions {
             duration_ms: 60_000,
             fps: 11,
-            seed: 0,
+            ..ok.clone()
         },
     ] {
         assert!(
@@ -357,7 +373,7 @@ fn effect_options_and_budgets_are_enforced() {
             &EffectOptions {
                 duration_ms: 60_000,
                 fps: 10,
-                seed: 0
+                ..ok.clone()
             }
         )
         .unwrap()

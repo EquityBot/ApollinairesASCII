@@ -654,6 +654,7 @@ fn apply_effect(app: &mut App) -> Result<()> {
             .map_err(|_| "Duration is too large")?,
         fps: u32::try_from(number("effect-fps")?).map_err(|_| "FPS is too large")?,
         seed: u32::try_from(number("effect-seed")?).map_err(|_| "Seed is too large")?,
+        reverse: checked("effect-reverse")?,
     };
     let project = effects::apply(&select("effect")?, &source, &options)?;
     let count = project.frames().len();

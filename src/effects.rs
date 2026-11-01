@@ -2,7 +2,8 @@
 //!
 //! Every effect keeps the source dimensions and emits printable ASCII only. Spaces in the
 //! source are background: effects move, reveal or burn the other characters. All effects
-//! except `burn` finish on the unchanged source frame; `burn` finishes blank.
+//! except `burn` finish on the unchanged source frame; `burn` finishes blank. With
+//! `reverse`, the frames play backwards, so the art leaves instead of arriving.
 
 use crate::animation::random;
 use crate::{Animation, Frame, MAX_FRAMES, MAX_PROJECT_CELLS, Result, TimedFrame};
@@ -28,6 +29,8 @@ pub struct EffectOptions {
     pub duration_ms: u32,
     pub fps: u32,
     pub seed: u32,
+    /// Play the frames backwards: the art starts whole and leaves.
+    pub reverse: bool,
 }
 
 impl Default for EffectOptions {
@@ -36,6 +39,7 @@ impl Default for EffectOptions {
             duration_ms: 2000,
             fps: 20,
             seed: 42,
+            reverse: false,
         }
     }
 }
@@ -162,6 +166,9 @@ pub fn apply(effect: &str, source: &Frame, options: &EffectOptions) -> Result<An
             frame: Frame::new(width, height, cells)?,
             duration_ms: share + extra,
         });
+    }
+    if options.reverse {
+        frames.reverse();
     }
     Animation::new(frames, false)
 }

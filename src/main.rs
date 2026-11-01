@@ -132,7 +132,14 @@ enum Command {
         #[arg(value_parser = clap::builder::PossibleValuesParser::new(effects::EFFECTS))]
         effect: String,
         /// A .txt or .json file, or `-` for stdin. Ragged text rows are padded.
-        input: PathBuf,
+        #[arg(required_unless_present = "art", conflicts_with = "art")]
+        input: Option<PathBuf>,
+        /// Animate a catalogue piece instead of a file.
+        #[arg(long)]
+        art: Option<String>,
+        /// Play backwards, so the art leaves instead of arriving.
+        #[arg(long)]
+        reverse: bool,
         /// Total milliseconds, 100 to 60000.
         #[arg(long, default_value_t = 2000)]
         duration: u32,
@@ -307,12 +314,18 @@ fn run(args: Args) -> Result<()> {
         Command::Effect {
             effect,
             input,
+            art,
+            reverse,
             duration,
             fps,
             seed,
             source_frame,
         } => {
-            let project = load(&input, true)?;
+            let project = match (art, input) {
+                (Some(name), _) => Animation::still(art::template(&name)?),
+                (None, Some(path)) => load(&path, true)?,
+                (None, None) => unreachable!("clap requires an input or --art"),
+            };
             let source = &project
                 .frames()
                 .get(source_frame)
@@ -325,6 +338,7 @@ fn run(args: Args) -> Result<()> {
                     duration_ms: duration,
                     fps,
                     seed,
+                    reverse,
                 },
             )?
         }

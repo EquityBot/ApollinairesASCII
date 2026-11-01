@@ -109,6 +109,37 @@ fn list_searches_tags_and_effects_animate_files_and_stdin() {
     assert_eq!(project.frames().len(), 5);
     let fox = apollinaires_ascii::art::template("fox").unwrap();
     assert_eq!(project.frames()[4].frame, fox);
+    let leaving = cli(&[
+        "effect",
+        "scatter",
+        "--art",
+        "fox",
+        "--reverse",
+        "--duration",
+        "500",
+        "--fps",
+        "10",
+    ]);
+    assert!(leaving.status.success(), "{}", text(&leaving.stderr));
+    let leaving = apollinaires_ascii::Animation::from_json(text(&leaving.stdout)).unwrap();
+    assert!(
+        leaving.frames().iter().map(|f| &f.frame).eq(project
+            .frames()
+            .iter()
+            .rev()
+            .map(|f| &f.frame))
+    );
+    assert!(!cli(&["effect", "scatter"]).status.success());
+    assert!(
+        !cli(&["effect", "scatter", art.to_str().unwrap(), "--art", "fox"])
+            .status
+            .success()
+    );
+    assert!(
+        !cli(&["effect", "scatter", "--art", "unicorn"])
+            .status
+            .success()
+    );
     assert!(
         !cli(&["effect", "sparkle", art.to_str().unwrap()])
             .status

@@ -9,6 +9,7 @@ apollinaire art cat --border --output cat.txt
 apollinaire effect typewriter cat.txt --duration 3000 --fps 30 --output cat.json
 apollinaire art rocket | apollinaire effect burn - --seed 7 --format html --output rocket.html
 apollinaire effect wave movie.json --source-frame 4 --output wave.json
+apollinaire effect scatter --art ghost --reverse --output goodbye.json
 apollinaire text "Hello" --font small --align center --width 72
 apollinaire text "RUST" --font-file my-font.flf
 apollinaire animate donut --width 72 --height 24 --frames 120 --fps 30 --output donut.json
@@ -39,7 +40,7 @@ Use `-` as the input path for stdin. `.json` input is always parsed as a project
 
 `list --tag TEXT` prints each catalogue piece whose name, category or tag contains the text, ignoring case, with its category and tags. It fails when nothing matches.
 
-`effect NAME INPUT` animates one frame of a `.txt` or `.json` input (or `-` for stdin): `reveal`, `typewriter`, `decrypt`, `scatter`, `wipe-left`, `wipe-right`, `wipe-up`, `wipe-down`, `rain`, `wave` or `burn`. Spaces are background; the other characters move, appear or burn. The frame count is `--duration` (100 to 60,000 ms, default 2,000) times `--fps` (1 to 60, default 20) divided by 1,000, rounded up and at least 2, within the 600-frame and 8,000,000-cell project limits. The frames share the duration exactly. The same `--seed` always gives the same frames. Every effect except `burn` ends on the unchanged source; `burn` ends blank. `--source-frame` chooses the frame of a JSON project, counting from zero. Ragged text rows are padded.
+`effect NAME INPUT` animates one frame of a `.txt` or `.json` input (or `-` for stdin), or a catalogue piece with `--art NAME` instead of an input: `reveal`, `typewriter`, `decrypt`, `scatter`, `wipe-left`, `wipe-right`, `wipe-up`, `wipe-down`, `rain`, `wave` or `burn`. Spaces are background; the other characters move, appear or burn. The frame count is `--duration` (100 to 60,000 ms, default 2,000) times `--fps` (1 to 60, default 20) divided by 1,000, rounded up and at least 2, within the 600-frame and 8,000,000-cell project limits. The frames share the duration exactly. The same `--seed` always gives the same frames. Every effect except `burn` ends on the unchanged source; `burn` ends blank. `--reverse` plays the frames backwards, so the art leaves instead of arriving. `--source-frame` chooses the frame of a JSON project, counting from zero. Ragged text rows are padded.
 
 `image` accepts several inputs with `--output-dir DIR`. It creates the directory if needed and writes one new file per input, named after the input's file name plus the output extension: `.txt` for a still and `.json` for an animated GIF unless `--format` says otherwise, so `clip.gif` becomes `clip.gif.json`. Inputs whose names would collide, ignoring letter case, are refused before anything is written. Existing files are never replaced. A failed input is reported on stderr and the others are still converted; the exit status is nonzero if any input failed.
 
