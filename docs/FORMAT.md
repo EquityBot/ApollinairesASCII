@@ -24,8 +24,12 @@ All fields are required and no additional or duplicate fields are accepted. JSON
 | Image decoder allocation limit | 128 MiB |
 | GIF logical-screen pixels across frames | 64,000,000 |
 | Custom font file | 512 KiB |
+| Video and camera sampling | 1 to 60 frames per second; camera recordings of 1 to 60 seconds |
+| Video and camera pixels read per frame | 2 per output column across, aspect preserved |
 | Custom font height / row length | 32 rows / 256 bytes |
 | Browser undo history | 20 states and 16,000,000 cells |
+
+Video and camera input in the browser is checked against the frame, cell and media dimension limits before any frame is read. Video files are not read into memory by the editor; the browser decodes them from a local object URL, and each sampled frame is drawn into an offscreen canvas only to read its pixels for the converter. Frame durations come from the sample times, rounded to milliseconds so they sum to the clip or recording length.
 
 GIF headers, image rectangles, frame count, aggregate decoded screen pixels and output cell budget are inspected before frame decoding. Image rectangles must be nonzero and fit inside the logical screen. Decoder limits complement these checks; they are not a process-wide memory cap. The browser retains the current project, bounded history and temporary decode data, so peak memory can exceed the stored character count.
 

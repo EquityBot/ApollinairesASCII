@@ -161,32 +161,37 @@ impl App {
     pub(super) fn render(&self) -> Result<()> {
         let drawing = &self.drawing;
         let shown = drawing.stroke.as_ref().map_or(self.frame(), |s| &s.preview);
-        node::<Element>("art")?.set_text_content(Some(&shown.text()));
+        // A live camera writes its own preview into the grid; the overlays wait until it stops.
+        let live = self.camera.is_some();
+        if !live {
+            node::<Element>("art")?.set_text_content(Some(&shown.text()));
+        }
         let (columns, rows) = (self.project.width(), self.project.height());
-        let onion = (checked("onion-skin")? && self.selected > 0 && !self.playing).then(|| {
-            // The ghost fills only blank cells, so it never overlaps or joins the frame's text.
-            let previous = &self.project.frames()[self.selected - 1].frame;
-            let cells = previous
-                .cells()
-                .iter()
-                .zip(shown.cells())
-                .map(|(ghost, cell)| if *cell == b' ' { *ghost } else { b' ' })
-                .collect();
-            Frame::new(columns, rows, cells)
-        });
+        let onion =
+            (checked("onion-skin")? && self.selected > 0 && !self.playing && !live).then(|| {
+                // The ghost fills only blank cells, so it never overlaps or joins the frame's text.
+                let previous = &self.project.frames()[self.selected - 1].frame;
+                let cells = previous
+                    .cells()
+                    .iter()
+                    .zip(shown.cells())
+                    .map(|(ghost, cell)| if *cell == b' ' { *ghost } else { b' ' })
+                    .collect();
+                Frame::new(columns, rows, cells)
+            });
         let ghost = onion.transpose()?.map(|frame| frame.text());
         node::<Element>("onion")?.set_text_content(ghost.as_deref());
         toggle("onion", "hidden", ghost.is_none())?;
         let drawing_tool = drawing.tool != Tool::SelectText;
         toggle("grid", "data-drawing", drawing_tool)?;
-        toggle("cursor", "hidden", !drawing_tool)?;
+        toggle("cursor", "hidden", !drawing_tool || live)?;
         place(
             "cursor",
             (drawing.cursor.0, drawing.cursor.1, 1, 1),
             columns,
             rows,
         )?;
-        toggle("selection", "hidden", drawing.selection.is_none())?;
+        toggle("selection", "hidden", drawing.selection.is_none() || live)?;
         if let Some(area) = drawing.selection {
             place("selection", area, columns, rows)?;
         }

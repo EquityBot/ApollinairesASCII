@@ -16,6 +16,7 @@
   <main id="workspace">
     <div class="intro"><h1>Every mark is a character.</h1><p>Make a still, set letters in motion or build an animation. Everything you see in the artwork is selectable ASCII text.</p></div>
     <div id="status" role="status" aria-live="polite">Loading the editor. If this message remains, check that WebAssembly is enabled.</div>
+    <div id="media-busy" hidden><label for="media-progress">Progress</label><progress id="media-progress" max="1" value="0"></progress><button id="media-cancel" type="button" disabled>Cancel</button></div>
     <div class="workspace">
       <aside class="controls" aria-label="Artwork settings">
         <h2>Make something</h2>
@@ -45,8 +46,8 @@
         <label class="check"><input id="border" type="checkbox"> Add a text border</label>
         <button id="generate" class="primary" type="button" disabled>Generate artwork</button>
         <details>
-          <summary>Convert an image or GIF</summary>
-          <p>The file stays in your browser. Only characters are displayed or exported.</p>
+          <summary>Convert an image, video or camera</summary>
+          <p>Files and camera frames stay in your browser. Only characters are displayed or exported.</p>
           <label for="media-file">Image or animated GIF (up to 16 MiB)</label><input id="media-file" type="file" accept=".png,.jpg,.jpeg,.gif,.webp,.bmp,.ppm,.pgm,.pnm">
           <label for="ramp">Characters, from light to dense</label><input id="ramp" type="text" value=" .:-=+*#%@" maxlength="256">
           <label class="check"><input id="auto-height" type="checkbox" checked> Preserve aspect ratio</label>
@@ -55,6 +56,14 @@
           <label class="check"><input id="edges" type="checkbox"> Trace edges</label>
           <div class="pair"><div><label for="gamma">Gamma</label><input id="gamma" type="number" min="0.1" max="5" step="0.1" value="1"></div><div><label for="contrast">Contrast</label><input id="contrast" type="number" min="0.1" max="5" step="0.1" value="1"></div></div>
           <button id="convert" type="button" disabled>Convert selected file</button>
+          <h3>Video or camera</h3>
+          <p>Uses the columns and character settings above. Leave End blank to convert to the end of the video.</p>
+          <label for="media-fps">Frames / second</label><input id="media-fps" type="number" min="1" max="60" value="10">
+          <label for="video-file">Video (any format this browser plays)</label><input id="video-file" type="file" accept="video/*">
+          <div class="pair"><div><label for="video-start">Start (seconds)</label><input id="video-start" type="number" min="0" step="0.1" value="0"></div><div><label for="video-end">End (seconds)</label><input id="video-end" type="number" min="0" step="0.1"></div></div>
+          <button id="video-convert" type="button" disabled>Convert video</button>
+          <label for="camera-seconds">Camera recording (seconds)</label><input id="camera-seconds" type="number" min="1" max="60" value="5">
+          <div class="actions"><button id="camera-start" type="button" disabled>Camera on</button><button id="camera-stop" type="button" disabled>Camera off</button><button id="camera-record" type="button" disabled>Record</button></div>
         </details>
         <details>
           <summary>Open existing text or animation</summary>
@@ -116,7 +125,7 @@
         </details>
       </section>
     </div>
-    <section class="notes"><h2>Text, all the way through.</h2><p>No canvas, image preview, SVG artwork or Unicode block substitutes. Copy a frame into an editor, use the Rust library in your own program or play a saved project in a terminal.</p><p>The JSON project keeps frames and their durations. The standalone HTML player renders the same characters as text. Image files are accepted only as conversion inputs.</p></section>
+    <section class="notes"><h2>Text, all the way through.</h2><p>No canvas, image preview, SVG artwork or Unicode block substitutes. Copy a frame into an editor, use the Rust library in your own program or play a saved project in a terminal.</p><p>The JSON project keeps frames and their durations. The standalone HTML player renders the same characters as text. Images, videos and the camera are accepted only as conversion inputs.</p></section>
   </main>
   <footer><span>ApollinairesASCII / EquityBot</span><a href="./THIRD_PARTY_NOTICES.txt">Dependency notices</a><a href="https://github.com/EquityBot/ApollinairesASCII/blob/master/docs/RESEARCH.md">Research &amp; provenance</a></footer>
   <noscript><p>This editor needs JavaScript to load its Rust WebAssembly module. The CLI works without a browser.</p></noscript>
