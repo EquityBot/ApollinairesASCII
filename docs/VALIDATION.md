@@ -12,7 +12,7 @@ Local validation on 1 November 2026 used Rust 1.99.1, Windows MSVC, Linux x86_64
 | Library example | Compiled and ran successfully |
 | WebAssembly release build and Clippy with warnings denied | Passed with the `web` feature and default features disabled |
 | wasm-bindgen | Generated browser bindings using pinned CLI version 0.2.130 |
-| Editor tests in a headless browser | 12 `wasm-bindgen-test` cases passed in Chromium 156 headless shell on Windows; each of 4 deliberate defects (typing runs committed per key, a selectable onion layer, no diagram junctions, pointer cells off by one) failed at least one case |
+| Editor tests in a headless browser | 16 `wasm-bindgen-test` cases passed in Chromium 156 headless shell on Windows; each of 9 deliberate defects (typing runs committed per key, a selectable onion layer, onion skin during playback, no diagram junctions, pointer cells off by one, no stroke preview, a swallowed stamp error, CRLF kept on import, unapplied edits ignored) failed at least one case |
 | GitHub workflow syntax | Passed actionlint |
 | Aikido source scan | Zero issues across 15 files; zero skipped paths |
 | Aikido dependency scan | Reachable weezl alert fixed; 5 remaining transitive alerts documented in [dependency notes](DEPENDENCIES.md) |
@@ -47,9 +47,9 @@ Screenshots were visually inspected. Clipboard permission was denied by the head
 
 ## Automated editor tests
 
-`src/web/tests.rs` loads the real `web/index.html` and `web/style.css`, starts the editor and drives it only through DOM events and controls. It covers pencil, eraser, line, rectangle, fill, typing and stamped text, and area select, move, copy, cut, paste and clear, each by pointer and by keyboard; diagram boxes, labels and connectors joining with `+`; onion skin staying out of the frame, the frame editor and selected text; undo and redo of a stroke and of a typing run by button and shortcut; and Unicode or control characters never reaching `#art`. Every read of `#art` checks that it holds printable ASCII in equal-width LF rows. CI runs the suite in headless Chrome on Linux for every pull request.
+`src/web/tests.rs` embeds the body of `web/index.html` and `web/style.css` (not the page's loader script), starts the editor and drives it only through DOM events and controls. Pencil, eraser, line (including its live preview), rectangle, fill, typing, and area select and move are each used by pointer and by keyboard. Stamped text and the area buttons are clicked; area copy, cut and paste dispatch the clipboard events a browser raises for Ctrl+C, Ctrl+X and Ctrl+V. It also covers diagram boxes, labels and connectors joining with `+`; onion skin staying out of the frame, the frame editor and selected text, and hiding during playback; undo and redo of a stroke and of a typing run by button and shortcut; opening ragged text and JSON projects through the file control; timeline seeking, frame editing, reordering, flipping and deletion; applying an effect; catalogue search; and Unicode or control characters never reaching `#art`. Every read of `#art` checks that it holds printable ASCII in equal-width LF rows. CI runs the suite in headless Chrome on Linux for every pull request.
 
-The suite dispatches synthetic events, so it does not exercise the system clipboard, real pointer capture, touch hardware, layout at other widths or screen readers. The manual checks above remain the evidence for those. The suite has not been run in Firefox or Safari.
+The suite dispatches synthetic events, so it does not exercise the system clipboard, real pointer capture, touch hardware, the camera, video decoding, downloads, layout at other widths or screen readers. The manual checks above remain the evidence for those. The suite has not been run in Firefox or Safari.
 
 ## Manual check limits
 

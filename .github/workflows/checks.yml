@@ -72,9 +72,7 @@ jobs:
       - run: cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web --lib --tests -- -D warnings
       # The runner image ships Chrome with a matching chromedriver.
       - name: Editor tests in headless Chrome
-        run: CHROMEDRIVER="$CHROMEWEBDRIVER/chromedriver" cargo test --locked --target wasm32-unknown-unknown --no-default-features --features web --lib
-        env:
-          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER: wasm-bindgen-test-runner
+        run: CHROMEDRIVER="$CHROMEWEBDRIVER/chromedriver" cargo test-editor
       - run: cargo build --locked --release --target wasm32-unknown-unknown --no-default-features --features web
       - run: wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --target web --out-dir web/pkg --out-name apollinaires_ascii
       # -O3 rather than -Os or -Oz: it favours conversion speed over a few more kilobytes.
