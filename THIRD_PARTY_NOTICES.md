@@ -4,7 +4,7 @@
 
 Source: https://github.com/orhnk/RASCII, commit `8d33a3670e51298d530ab202090b212501310cdd`.
 
-Copyright (c) 2022-present KoBruh. MIT. The original notice remains in [LICENSE.md](LICENSE.md). ApollinairesASCII retains upstream Git history and adapts its image-to-character conversion approach. Other components are new code.
+Copyright (c) 2022-present KoBruh. MIT. The original notice remains in [LICENSE.md](LICENSE.md). ApollinaireASCII retains upstream Git history and adapts its image-to-character conversion approach. Other components are new code.
 
 ## FIGlet renderer and fonts
 

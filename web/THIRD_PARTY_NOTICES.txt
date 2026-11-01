@@ -1,10 +1,10 @@
-ApollinairesASCII dependency notices
+ApollinaireASCII dependency notices
 Locked dependencies checked 1 November 2026. Includes native and browser dependencies.
 
 # MIT License
 
 Copyright (c) 2022-present KoBruh
-Copyright (c) 2026 ApollinairesASCII contributors
+Copyright (c) 2026 ApollinaireASCII contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22043,7 +22043,7 @@ Merged by John Cowan <cowan@ccil.org>
 Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- big.flf header ---
 flf2a$ 8 6 59 15 11 0 24463 0
@@ -22057,7 +22057,7 @@ modifier's name is placed on a comment line.
 Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- block.flf header ---
 flf2a$ 8 6 27 0 11 0 576 0
@@ -22071,7 +22071,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- ivrit.flf header ---
 flf2a$ 6 5 76 15 15 1 16271 0
@@ -22089,7 +22089,7 @@ figlet release 2.2 -- November 1996
 Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- lean.flf header ---
 flf2a$ 8 6 27 0 11 0 576 0
@@ -22103,7 +22103,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- mini.flf header ---
 flf2a$ 4 3 10 0 11 0 1920 0
@@ -22117,7 +22117,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- mnemonic.flf header ---
 flf2a$ 1 1 12 -1 6 0 0 0
@@ -22126,7 +22126,7 @@ This font uses the mnemonics of RFC1345
 (http://ds.internic.net/rfc/rfc1345.txt) to implement a really large character
 set rather crudely, but reversibly.  Two-letter mnemonics
 are prefixed by &; larger mnemonics are prefixed by &_ and followed by _.
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- script.flf header ---
 flf2a$ 7 5 16 0 11 0 3904 0
@@ -22140,7 +22140,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- shadow.flf header ---
 flf2a$ 5 4 16 0 11 0 4992 0
@@ -22154,7 +22154,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- slant.flf header ---
 flf2a$ 6 5 16 15 11 0 18319 0
@@ -22168,7 +22168,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- small.flf header ---
 flf2a$ 5 4 13 15 11 0 22415 0
@@ -22182,7 +22182,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- smscript.flf header ---
 flf2a$ 5 4 13 0 11 0 3904 0
@@ -22196,7 +22196,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- smshadow.flf header ---
 flf2a$ 4 3 14 0 11 0 1920 0
@@ -22210,7 +22210,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- smslant.flf header ---
 flf2a$ 5 4 14 15 11 0 22415 0
@@ -22224,7 +22224,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- standard.flf header ---
 flf2a$ 6 5 16 15 16 0 24463 0
@@ -22243,7 +22243,7 @@ supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
 Modified 2012-05 by Patrick Gillespie (patorjk@gmail.com) to add the 0xCA0 character.
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 
 ============================================================
@@ -22306,7 +22306,7 @@ tlf2a$ 10 9 22 -1 5 0 0 0
   This font was automatically generated using:
    % caca2tlf --half --ascii "Monospace Bold 12"
 ================================================================================
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- ascii9.tlf header ---
 tlf2a$ 8 7 16 -1 5 0 0 0
@@ -22314,7 +22314,7 @@ tlf2a$ 8 7 16 -1 5 0 0 0
   This font was automatically generated using:
    % caca2tlf --half --ascii "Monospace 9"
 ================================================================================
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- bigascii12.tlf header ---
 tlf2a$ 19 18 22 -1 5 0 0 0
@@ -22322,7 +22322,7 @@ tlf2a$ 19 18 22 -1 5 0 0 0
   This font was automatically generated using:
    % caca2tlf --ascii "Monospace Bold 12"
 ================================================================================
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- bigascii9.tlf header ---
 tlf2a$ 15 14 16 -1 5 0 0 0
@@ -22330,7 +22330,7 @@ tlf2a$ 15 14 16 -1 5 0 0 0
   This font was automatically generated using:
    % caca2tlf --ascii "Monospace 9"
 ================================================================================
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- smascii12.tlf header ---
 tlf2a$ 10 9 12 -1 5 0 0 0
@@ -22338,7 +22338,7 @@ tlf2a$ 10 9 12 -1 5 0 0 0
   This font was automatically generated using:
    % caca2tlf --quarter --ascii "Monospace Bold 12"
 ================================================================================
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 
 --- smascii9.tlf header ---
 tlf2a$ 8 7 9 -1 5 0 0 0
@@ -22346,4 +22346,4 @@ tlf2a$ 8 7 9 -1 5 0 0 0
   This font was automatically generated using:
    % caca2tlf --quarter --ascii "Monospace 9"
 ================================================================================
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.

@@ -1,4 +1,4 @@
-use apollinaires_ascii::{Canvas, Frame, canvas::bounds};
+use apollinaire_ascii::{Canvas, Frame, canvas::bounds};
 
 fn canvas(text: &str) -> Canvas {
     Canvas::from_frame(&Frame::from_text(text).unwrap())
@@ -63,10 +63,7 @@ fn flood_fill_replaces_only_the_four_connected_run() {
 
 #[test]
 fn flood_fill_covers_the_largest_grid() {
-    let mut grid = blank(
-        apollinaires_ascii::MAX_WIDTH,
-        apollinaires_ascii::MAX_HEIGHT,
-    );
+    let mut grid = blank(apollinaire_ascii::MAX_WIDTH, apollinaire_ascii::MAX_HEIGHT);
     grid.flood_fill(100, 100, b'~').unwrap();
     assert!(grid.finish().cells().iter().all(|cell| *cell == b'~'));
 }

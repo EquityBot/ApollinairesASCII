@@ -1,6 +1,6 @@
 [package]
-name = "apollinaires-ascii"
-version = "0.2.0"
+name = "apollinaire-ascii"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.99"
 license = "MIT"

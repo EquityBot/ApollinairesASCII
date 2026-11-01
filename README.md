@@ -1,4 +1,4 @@
-# ApollinairesASCII
+# ApollinaireASCII
 
 [![Checks and browser](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/checks.yml/badge.svg)](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/checks.yml) [![Licence: MIT](.github/assets/badges/licence.svg)](LICENSE.md) [![Editor: in browser](.github/assets/badges/editor.svg)](https://equitybot.github.io/ApollinaireASCII/)
 
@@ -6,7 +6,7 @@
 
 <sub>A preview of `apollinaire animate ghost`. The tools themselves output text, never images.</sub>
 
-Static art, block letters and animated scenes made of real, selectable ASCII characters. The `apollinaires-ascii` Rust library and CLI share their rendering and validation code with the browser editor.
+Static art, block letters and animated scenes made of real, selectable ASCII characters. The `apollinaire-ascii` Rust library and CLI share their rendering and validation code with the browser editor.
 
 [Open the browser editor](https://equitybot.github.io/ApollinaireASCII/) · [CLI guide](docs/CLI.md) · [Library example](examples/library.rs) · [Research and provenance](docs/RESEARCH.md)
 
@@ -49,11 +49,13 @@ gh attestation verify apollinaire-v0.3.0-x86_64-unknown-linux-musl.tar.gz \
   --source-ref refs/tags/v0.3.0
 ```
 
-To build from source instead, install [Rust](https://www.rust-lang.org/tools/install), then:
+To build from source instead, install [Rust](https://www.rust-lang.org/tools/install) 1.99 or later, then build the [crates.io release](https://crates.io/crates/apollinaire-ascii):
 
 ```sh
-cargo install --locked --git https://github.com/EquityBot/ApollinaireASCII
+cargo install --locked apollinaire-ascii
 ```
+
+For unreleased changes on `master`, use `cargo install --locked --git https://github.com/EquityBot/ApollinaireASCII`.
 
 ```sh
 apollinaire art ghost
@@ -76,11 +78,11 @@ The library has no browser or CLI dependency when default features are disabled:
 
 ```toml
 [dependencies]
-apollinaires-ascii = { git = "https://github.com/EquityBot/ApollinaireASCII", default-features = false }
+apollinaire-ascii = { version = "0.3", default-features = false }
 ```
 
 ```rust
-use apollinaires_ascii::{Animation, Canvas, SceneOptions, animation};
+use apollinaire_ascii::{Animation, Canvas, SceneOptions, animation};
 
 fn main() -> Result<(), String> {
     let mut canvas = Canvas::new(24, 6)?;
@@ -103,7 +105,7 @@ fn main() -> Result<(), String> {
 ```sh
 cargo build --locked --release --target wasm32-unknown-unknown --no-default-features --features web
 cargo install --locked wasm-bindgen-cli --version 0.2.130
-wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --target web --out-dir web/pkg --out-name apollinaires_ascii
+wasm-bindgen target/wasm32-unknown-unknown/release/apollinaire_ascii.wasm --target web --out-dir web/pkg --out-name apollinaire_ascii
 ```
 
 Serve `web/` with a local HTTP server and open its URL. Opening `index.html` directly as a `file:` URL cannot load its WebAssembly module. GitHub Actions builds and deploys the same directory to GitHub Pages.
@@ -125,7 +127,7 @@ The integration tests cover the ASCII contract, whitespace, drawing, all bundled
 
 ## Foundation and licence
 
-ApollinairesASCII retains the history of [orhnk/RASCII](https://github.com/orhnk/RASCII), starting at `8d33a3670e51298d530ab202090b212501310cdd`. Its MIT image-conversion approach is the foundation of the converter. The shared frame model, drawing, scenes, project format, editor and exporters are new Rust code. It is an evolution of a focused converter, not a claim that upstream supplied this whole toolkit.
+ApollinaireASCII retains the history of [orhnk/RASCII](https://github.com/orhnk/RASCII), starting at `8d33a3670e51298d530ab202090b212501310cdd`. Its MIT image-conversion approach is the foundation of the converter. The shared frame model, drawing, scenes, project format, editor and exporters are new Rust code. It is an evolution of a focused converter, not a claim that upstream supplied this whole toolkit.
 
 [Research](docs/RESEARCH.md) records 1,164 discovered repositories across 27 multilingual searches, the shortlist and why this foundation was selected. Discovery metadata is not a source audit of every result. No Ghostty animation artwork was copied.
 

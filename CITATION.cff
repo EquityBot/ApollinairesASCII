@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this work, cite it with this metadata and the release tag or commit you used."
+title: "ApollinaireASCII"
+type: software
+authors:
+  - name: "EquityBot"
+abstract: "A Rust library, CLI and browser editor for static ASCII art, block lettering and animation in real, selectable characters. A fork of RASCII."
+repository-code: "https://github.com/EquityBot/ApollinaireASCII"
+url: "https://equitybot.github.io/ApollinaireASCII/"
+license: MIT
+keywords:
+  - ascii-animation
+  - ascii-art
+  - ascii-art-generator
+  - ascii-editor
+  - figlet
+  - gif-to-ascii
+  - image-to-ascii
+  - rust
+  - text-art
+  - webassembly
+references:
+  - type: software
+    title: "RASCII"
+    authors:
+      - name: "KoBruh and the RASCII contributors"
+    repository-code: "https://github.com/orhnk/RASCII"
+    license: MIT
