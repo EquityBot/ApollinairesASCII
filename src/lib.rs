@@ -16,6 +16,7 @@ pub mod diagram;
 pub mod effects;
 pub mod export;
 pub mod frame;
+mod gif;
 pub mod image_renderer;
 pub mod lettering;
 mod project_json;

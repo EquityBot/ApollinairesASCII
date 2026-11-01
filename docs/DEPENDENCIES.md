@@ -4,11 +4,15 @@ Checked on 1 November 2026 against the committed Cargo.lock. Scan alerts describ
 
 ## Fixed reachable decoder alert
 
-Aikido reported `AIKIDO-2026-10928` in `weezl` 0.1.12. GIF input reaches the LZW decoder, so file limits alone do not remove the exposure. The [official GIF upstream change](https://github.com/image-rs/image-gif/commit/e60e4dd7708cc50f9371185cefa04273f410f116) updates it to 0.2.1. Cargo.toml pins that exact upstream commit until a stable GIF release includes it. Cargo.lock now resolves `weezl` 0.2.1 and a subsequent Aikido scan no longer reports this alert. [Upstream changes](https://github.com/image-rs/weezl/blob/v0.2.0/Changes.md#version-020) describe malformed-stream and progress fixes.
+Aikido reported `AIKIDO-2026-10928` in `weezl` 0.1.12. GIF input reaches the LZW decoder, so file limits alone do not remove the exposure. The latest `gif` release, 0.14.2, still uses `weezl` 0.1; the [upstream fix](https://github.com/image-rs/image-gif/commit/e60e4dd7708cc50f9371185cefa04273f410f116) moving it to 0.2.1 is unreleased. A `[patch]` pin protects only the workspace that declares it, not applications that depend on this library, so ApollinairesASCII decodes GIF frames itself in `src/gif.rs` with `weezl` 0.2.1 and builds `image` without its GIF feature. Cargo.lock resolves `weezl` 0.2.1 and no `gif` crate, for this repository and for library users. [Upstream changes](https://github.com/image-rs/weezl/blob/v0.2.0/Changes.md#version-020) describe malformed-stream and progress fixes.
+
+The decoder reproduces the frames `image` 0.25.10 produced with the patched `gif` crate. A comparison covered 11 real GIFs, 2 hand-built LZW edge cases, 3,000 generated animations and 63,231 corrupted or truncated variants; 1,946 variants were skipped because their screens exceed the 4096-pixel preflight limit. Every input both decoders accepted gave identical pixels and delays, and neither panicked. They differ only in accepting malformed files:
+
+- Frames outside the logical screen, and files with no frames: the preflight check refuses these, as it did before.
+- 6 corrupt interlaced frames had an invalid LZW code after the last pixel. `gif` reads interlaced data a row at a time and reached that code; this decoder stops once every pixel is decoded and accepts them.
+- 1 file's image data began with an empty sub-block. `gif` read the next byte as more image data; this decoder reports the frame as truncated.
 
 ## Remaining package alerts
-
-Cargo applies `[patch]` only from a workspace root. Downstream Rust applications must also include the pinned GIF patch shown in the README; a library dependency's own patch section is not inherited. Verify that the consuming application's lockfile resolves `weezl` 0.2.1 or a later fixed version. This requirement remains until a compatible stable GIF release incorporates the fix.
 
 | Locked package | Aikido alerts | Current application reachability |
 | --- | --- | --- |

@@ -1,4 +1,5 @@
 #![cfg(feature = "cli")]
+mod common;
 use std::io::Write;
 use std::process::Command;
 fn cli(args: &[&str]) -> std::process::Output {
@@ -231,7 +232,10 @@ fn image_batches_create_one_file_per_input_and_never_overwrite() {
     let case = cli(&["image", &a, &upper, "--output-dir", clash.to_str().unwrap()]);
     assert!(text(&case.stderr).contains("Several inputs would be named"));
     assert!(!clash.exists());
-    let gif = picture("a.gif");
+    let gif = dir.join("a.gif");
+    let frame = common::GifFrame::full(16, 8, vec![0; 128], 0);
+    std::fs::write(&gif, common::gif(16, 8, Some(&[[0, 0, 0]]), &[frame])).unwrap();
+    let gif = gif.to_str().unwrap().to_string();
     let kinds = dir.join("kinds");
     let both = cli(&[
         "image",

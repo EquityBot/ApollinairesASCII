@@ -5,7 +5,7 @@ use crate::{
     Animation, Frame, MAX_FRAMES, MAX_INPUT_BYTES, MAX_PROJECT_CELLS, Result, TimedFrame,
     dimensions, printable,
 };
-use image::{AnimationDecoder, DynamicImage, ImageDecoder, ImageFormat, ImageReader, Limits};
+use image::{DynamicImage, ImageDecoder, ImageFormat, ImageReader, Limits};
 use std::io::Cursor;
 
 pub const RAMPS: &[(&str, &str)] = &[
@@ -189,28 +189,26 @@ pub fn decode_media(bytes: &[u8], options: &RenderOptions) -> Result<Animation> 
         {
             return Err("GIF exceeds frame, output cell or 64 million decoded pixel budget".into());
         }
-        let mut decoder = image::codecs::gif::GifDecoder::new(Cursor::new(bytes))
-            .map_err(|e| format!("Invalid GIF: {e}"))?;
-        decoder
-            .set_limits(limits())
-            .map_err(|e| format!("GIF limit: {e}"))?;
         let mut frames = Vec::with_capacity(count);
-        for decoded in decoder.into_frames() {
+        crate::gif::for_each_frame(bytes, |screen, delay_cs| {
             if frames.len() >= count {
                 return Err("GIF frame count changed during decoding".into());
             }
-            let decoded = decoded.map_err(|e| format!("GIF frame: {e}"))?;
-            let (n, d) = decoded.delay().numer_denom_ms();
-            let delay = if n == 0 { 100 } else { n.div_ceil(d) };
+            let delay = if delay_cs == 0 {
+                100
+            } else {
+                u32::from(delay_cs) * 10
+            };
             if !(10..=60_000).contains(&delay) {
                 return Err("GIF frame delay is outside 10..=60000 ms".into());
             }
-            let frame = render_image(&DynamicImage::ImageRgba8(decoded.into_buffer()), options)?;
+            let frame = render_image(&DynamicImage::ImageRgba8(screen), options)?;
             frames.push(TimedFrame {
                 frame,
                 duration_ms: delay,
             });
-        }
+            Ok(())
+        })?;
         if frames.len() != count {
             return Err("GIF frame count does not match its container".into());
         }
