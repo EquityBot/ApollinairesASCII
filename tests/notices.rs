@@ -22,7 +22,8 @@ fn locked_packages(lock: &str) -> BTreeSet<String> {
     packages
 }
 
-/// Heading line after each rule, with any duplicates.
+/// Heading line after each rule, with any duplicates. Sections for code or fonts copied from
+/// outside Cargo give a `Source:` line under the heading and are skipped.
 fn notice_sections(notices: &str) -> (BTreeSet<String>, Vec<String>) {
     let mut sections = BTreeSet::new();
     let mut duplicates = Vec::new();
@@ -30,6 +31,12 @@ fn notice_sections(notices: &str) -> (BTreeSet<String>, Vec<String>) {
     while let Some(line) = lines.next() {
         if line == RULE {
             let heading = lines.next().unwrap_or_default().to_owned();
+            if lines
+                .next()
+                .is_some_and(|line| line.starts_with("Source: "))
+            {
+                continue;
+            }
             if !sections.insert(heading.clone()) {
                 duplicates.push(heading);
             }
