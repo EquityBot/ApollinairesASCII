@@ -77,6 +77,11 @@ jobs:
       - run: wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --target web --out-dir web/pkg --out-name apollinaires_ascii
       # -O3 rather than -Os or -Oz: it favours conversion speed over a few more kilobytes.
       - run: wasm-opt -O3 web/pkg/apollinaires_ascii_bg.wasm -o web/pkg/apollinaires_ascii_bg.wasm
+      # Pages caches each file for 10 minutes; per-commit URLs stop a deploy mixing a cached loader with a new module.
+      - name: Version asset URLs
+        run: |
+          sed -E -i "s#(\./(style\.css|pkg/[a-z_]+(\.js|_bg\.wasm)))([\"'])#\1?v=${GITHUB_SHA}\4#g" web/index.html
+          test "$(grep -o "?v=${GITHUB_SHA}" web/index.html | wc -l)" -eq 3
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: web
