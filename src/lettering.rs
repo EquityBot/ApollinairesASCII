@@ -113,6 +113,11 @@ pub fn render(
     )
 }
 
+/// Checks that `contents` is a plain FLF or TLF font whose every glyph is printable ASCII.
+pub fn validate_font(contents: &str) -> Result<()> {
+    Font::parse(contents).map(|_| ())
+}
+
 /// Renders `text` with a bundled font, or with `custom` FLF or TLF contents when given.
 pub fn render_with(
     text: &str,
@@ -145,7 +150,7 @@ pub fn render_with(
     };
     let blocks = Typesetter::new(&parsed, mode, limit).set(text)?;
     let widest = blocks.iter().map(|rows| rows[0].len()).max().unwrap_or(0);
-    let target = options.width.unwrap_or(widest);
+    let target = options.width.unwrap_or(widest.max(1));
     if target < widest {
         return Err(format!(
             "Lettering is {widest} columns; choose a wider canvas, a wrap width or shorter text"
@@ -318,14 +323,24 @@ impl Font {
             for code in GERMAN {
                 read_glyph(&lines, &mut at, height, hardblank, &code.to_string())?;
             }
-            // Like figlet, code-tagged glyphs continue whilst a line starts with an integer.
-            while let Some(tag) = lines.get(at).filter(|line| {
-                let token = line.trim_start();
+            // Code-tagged glyphs follow, each after a line starting with an integer. figlet stops
+            // at the first other line; blank lines are skipped here so later glyphs are checked
+            // too, and any other content is refused.
+            loop {
+                while lines.get(at).is_some_and(|line| line.trim().is_empty()) {
+                    at += 1;
+                }
+                let Some(tag) = lines.get(at) else { break };
+                let token = tag.trim_start();
                 let unsigned = token.strip_prefix(['-', '+']).unwrap_or(token);
-                unsigned.starts_with(|c: char| c.is_ascii_digit())
-            }) {
+                if !unsigned.starts_with(|c: char| c.is_ascii_digit()) {
+                    return Err(format!(
+                        "Font line {} is neither a glyph row nor a code tag",
+                        at + 1
+                    ));
+                }
                 at += 1;
-                let label = tag.split_whitespace().next().unwrap_or_default();
+                let label = token.split_whitespace().next().unwrap_or_default();
                 read_glyph(&lines, &mut at, height, hardblank, label)?;
             }
         }
@@ -356,8 +371,7 @@ fn read_glyph(
         if line.len() > 256 {
             return Err(format!("Font glyph {label} row {row} exceeds 256 bytes"));
         }
-        let trimmed = line.trim_ascii_end();
-        if let Some(byte) = trimmed
+        if let Some(byte) = line
             .iter()
             .find(|b| !(32..=126).contains(*b) && **b != hardblank)
         {
@@ -365,6 +379,7 @@ fn read_glyph(
                 "Font glyph {label} row {row} has byte 0x{byte:02x}; only fonts drawn in printable ASCII can be used"
             ));
         }
+        let trimmed = &line[..line.iter().rposition(|b| *b != b' ').map_or(0, |i| i + 1)];
         let end = *trimmed
             .last()
             .ok_or_else(|| format!("Font glyph {label} row {row} is missing an end marker"))?;

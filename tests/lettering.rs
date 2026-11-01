@@ -130,6 +130,9 @@ fn multiline_alignment_centres_each_line() {
     };
     let frame = lettering::render_with("I\nIII", "mnemonic", None, &options).unwrap();
     assert_eq!(frame.text(), " I \nIII");
+    // An empty line is a blank line of lettering, as in figlet.
+    let blank = lettering::render_with("\n", "standard", None, &Options::default()).unwrap();
+    assert_eq!((blank.width(), blank.text().trim()), (1, ""));
 }
 
 fn toilet_font() -> String {
@@ -164,6 +167,18 @@ fn toilet_fonts_import_only_when_every_glyph_is_printable_ascii() {
     refuse(&extended.replacen("xx@\n", "\u{c4}@\n", 1), "196 row 1");
     refuse(&font.replace("A@\n", "\u{c1}@\n"), "'A' row 1");
     refuse(&format!("{font}x@\n"), "missing rows");
+    refuse(&font.replace("A@\n", "A@\t\n"), "'A' row 1 has byte 0x09");
+    refuse(
+        &format!("{extended}not a tag\n"),
+        "neither a glyph row nor a code tag",
+    );
+    // Fonts are checked without rendering, so glyphs too wide for a sample word still load.
+    let mut wide = font.clone();
+    for c in "ACIS".chars() {
+        wide = wide.replace(&format!("{c}@\n"), &format!("{}@\n", "x".repeat(110)));
+    }
+    lettering::validate_font(&wide).unwrap();
+    assert!(lettering::render("ASCII", "custom", Some(&wide), Alignment::Left, None).is_err());
     refuse("PK\u{3}\u{4}tlf2a$ 1 1 4 -1 0", "Compressed fonts");
     refuse("tlf2\u{2500} 1 1 4 -1 0", "header");
 }

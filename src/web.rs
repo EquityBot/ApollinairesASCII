@@ -834,13 +834,7 @@ fn begin_file(id: &'static str) {
             if id == "font-file" {
                 let contents = String::from_utf8(bytes)
                     .map_err(|_| "Font must be plain UTF-8 .flf or .tlf text")?;
-                lettering::render(
-                    "ASCII",
-                    "custom",
-                    Some(&contents),
-                    lettering::Alignment::Left,
-                    None,
-                )?;
+                lettering::validate_font(&contents)?;
                 app.font = Some(contents);
                 node::<Element>("custom-option")?
                     .remove_attribute("disabled")
