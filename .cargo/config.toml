@@ -1,0 +1,6 @@
+# `cargo test-editor` runs the browser editor tests; set CHROMEDRIVER first.
+[target.wasm32-unknown-unknown]
+runner = "wasm-bindgen-test-runner"
+
+[alias]
+test-editor = "test --locked --target wasm32-unknown-unknown --no-default-features --features web --lib"

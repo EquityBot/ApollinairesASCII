@@ -12,6 +12,7 @@ Local validation on 1 November 2026 used Rust 1.99.1, Windows MSVC, Linux x86_64
 | Library example | Compiled and ran successfully |
 | WebAssembly release build and Clippy with warnings denied | Passed with the `web` feature and default features disabled |
 | wasm-bindgen | Generated browser bindings using pinned CLI version 0.2.130 |
+| Editor tests in a headless browser | 16 `wasm-bindgen-test` cases passed in Chromium 156 headless shell on Windows; each of 9 deliberate defects (typing runs committed per key, a selectable onion layer, onion skin during playback, no diagram junctions, pointer cells off by one, no stroke preview, a swallowed stamp error, CRLF kept on import, unapplied edits ignored) failed at least one case |
 | GitHub workflow syntax | Passed actionlint |
 | Aikido source scan | Zero issues across 15 files; zero skipped paths |
 | Aikido dependency scan | Reachable weezl alert fixed; 5 remaining transitive alerts at that scan, 4 of them since removed with `figlet-rs`; see [dependency notes](DEPENDENCIES.md). Rescanned with the HTTPS client crates on 1 November 2026, no new alerts |
@@ -56,7 +57,15 @@ Headless Brave loaded and executed the generated WebAssembly module over local H
 
 Screenshots were visually inspected. Clipboard permission was denied by the headless browser even after a test permission request. The visible select-and-copy fallback and actual text selection were checked; a successful clipboard API write was not verified in that environment.
 
-These browser checks were local session checks, not a maintained cross-browser CI suite. CI compiles the browser and runs native contract tests. Firefox, Safari, touch hardware, screen-reader behaviour and macOS binaries have not been tested. Windows emits a Cargo PDB-name collision warning because the native library and CLI share a normalised crate name; the checks still pass. The local compiler-cache wrapper could not launch one large WebAssembly compile command, so local WASM checks were rerun successfully with that wrapper disabled.
+## Automated editor tests
+
+`src/web/tests.rs` embeds the body of `web/index.html` and `web/style.css` (not the page's loader script), starts the editor and drives it only through DOM events and controls. Pencil, eraser, line (including its live preview), rectangle, fill, typing, and area select and move are each used by pointer and by keyboard. Stamped text and the area buttons are clicked; area copy, cut and paste dispatch the clipboard events a browser raises for Ctrl+C, Ctrl+X and Ctrl+V. It also covers diagram boxes, labels and connectors joining with `+`; onion skin staying out of the frame, the frame editor and selected text, and hiding during playback; undo and redo of a stroke and of a typing run by button and shortcut; opening ragged text and JSON projects through the file control; timeline seeking, frame editing, reordering, flipping and deletion; applying an effect; catalogue search; and Unicode or control characters never reaching `#art`. Every read of `#art` checks that it holds printable ASCII in equal-width LF rows. CI runs the suite in headless Chrome on Linux for every pull request.
+
+The suite dispatches synthetic events, so it does not exercise the system clipboard, real pointer capture, touch hardware, the camera, video decoding, downloads, layout at other widths or screen readers. The manual checks above remain the evidence for those. The suite has not been run in Firefox or Safari.
+
+## Manual check limits
+
+The manual browser checks above were local session checks. Firefox, Safari, touch hardware, screen-reader behaviour and macOS binaries have not been tested. Windows emits a Cargo PDB-name collision warning because the native library and CLI share a normalised crate name; the checks still pass. The local compiler-cache wrapper could not launch one large WebAssembly compile command, so local WASM checks were rerun successfully with that wrapper disabled.
 
 ## Video and camera checks
 
