@@ -4,7 +4,7 @@ This font uses the mnemonics of RFC1345
 (http://ds.internic.net/rfc/rfc1345.txt) to implement a really large character
 set rather crudely, but reversibly.  Two-letter mnemonics
 are prefixed by &; larger mnemonics are prefixed by &_ and followed by _.
-Trimmed to the 102 required FIGcharacters by ApollinairesASCII contributors, 2026.
+Trimmed to the 102 required FIGcharacters by ApollinaireASCII contributors, 2026.
 &SP@@
 !@@
 "@@

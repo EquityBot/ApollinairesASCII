@@ -1,6 +1,6 @@
 //! HTTPS image download for the CLI binary. The library and browser never use the network.
 
-use apollinaires_ascii::{MAX_INPUT_BYTES, Result};
+use apollinaire_ascii::{MAX_INPUT_BYTES, Result};
 use std::time::Duration;
 
 pub const TIMEOUT: Duration = Duration::from_secs(30);

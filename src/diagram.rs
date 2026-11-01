@@ -5,7 +5,7 @@
 //! their direction. Drawing is clipped to the grid.
 //!
 //! ```
-//! use apollinaires_ascii::Canvas;
+//! use apollinaire_ascii::Canvas;
 //! let mut chart = Canvas::new(21, 3)?;
 //! chart.diagram_box((0, 0), (6, 2), "CLI")?;
 //! chart.diagram_box((14, 0), (20, 2), "LIB")?;

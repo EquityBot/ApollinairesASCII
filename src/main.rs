@@ -1,6 +1,6 @@
 mod fetch;
 
-use apollinaires_ascii::{
+use apollinaire_ascii::{
     Animation, Canvas, EffectOptions, Frame, MAX_INPUT_BYTES, RenderOptions, Result, SceneOptions,
     TimedFrame, animation, art, effects, export, lettering,
 };
@@ -171,7 +171,7 @@ enum Command {
         #[arg(long, default_value_t = 0)]
         source_frame: usize,
     },
-    /// Load .txt or an ApollinairesASCII .json project. Text CRLF is normalised to LF.
+    /// Load .txt or an ApollinaireASCII .json project. Text CRLF is normalised to LF.
     Import {
         input: PathBuf,
         #[arg(long)]
@@ -250,7 +250,7 @@ fn run(args: Args) -> Result<()> {
                 lettering::FONTS.join(", "),
                 animation::SCENES.join(", "),
                 effects::EFFECTS.join(", "),
-                apollinaires_ascii::image_renderer::RAMPS
+                apollinaire_ascii::image_renderer::RAMPS
                     .iter()
                     .map(|(n, _)| *n)
                     .collect::<Vec<_>>()
@@ -311,7 +311,7 @@ fn run(args: Args) -> Result<()> {
             cell_aspect,
             background,
         } => {
-            let ramp = apollinaires_ascii::image_renderer::RAMPS
+            let ramp = apollinaire_ascii::image_renderer::RAMPS
                 .iter()
                 .find(|(n, _)| *n == ramp)
                 .map_or(ramp.clone(), |(_, r)| r.to_string());
@@ -333,7 +333,7 @@ fn run(args: Args) -> Result<()> {
                     Some(url) => fetch::image(url)?,
                     None => read_bounded(input)?,
                 };
-                apollinaires_ascii::decode_media(&bytes, &options)
+                apollinaire_ascii::decode_media(&bytes, &options)
             };
             if let Some(dir) = output_dir {
                 return batch(&inputs, &dir, &args.export, convert);

@@ -1,7 +1,7 @@
 //! Static art, lettering and animation as printable ASCII text.
 //!
 //! ```
-//! use apollinaires_ascii::{Frame, Animation};
+//! use apollinaire_ascii::{Frame, Animation};
 //! let frame = Frame::from_text(" /\\\n/  ")?;
 //! assert!(frame.text().is_ascii());
 //! let project = Animation::still(frame);

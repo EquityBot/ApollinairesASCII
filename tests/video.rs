@@ -1,4 +1,4 @@
-use apollinaires_ascii::{
+use apollinaire_ascii::{
     Animation, MAX_FRAMES, RenderOptions, TimedFrame,
     video::{capture_due, check_capture, frame_durations, render_rgba, sample_size, sample_times},
 };
@@ -83,7 +83,7 @@ fn camera_captures_keep_durations_valid() {
     let frames = durations
         .iter()
         .map(|&duration_ms| TimedFrame {
-            frame: apollinaires_ascii::Frame::from_text("#").unwrap(),
+            frame: apollinaire_ascii::Frame::from_text("#").unwrap(),
             duration_ms,
         })
         .collect();

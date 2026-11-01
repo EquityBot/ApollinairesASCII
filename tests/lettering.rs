@@ -2,7 +2,7 @@
 //! horizontal layout, wrap and right-to-left from figlet 2.2.5 (cmatsuoka/figlet `202a0a8`,
 //! `figlet -l` with `-W`, `-k`, `-S` or `-s`; wrap width `w` is `-w w+1`), vertical layout from
 //! figlet.js 1.12.0 `textSync`.
-use apollinaires_ascii::lettering::{self, Alignment, Layout, Options};
+use apollinaire_ascii::lettering::{self, Alignment, Layout, Options};
 
 fn fixture(name: &str) -> String {
     let path = format!(

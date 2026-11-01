@@ -28,7 +28,7 @@ fn native_commands_emit_real_text_and_validate_input() {
     ]);
     assert!(animation.status.success());
     let project =
-        apollinaires_ascii::Animation::from_json(std::str::from_utf8(&animation.stdout).unwrap())
+        apollinaire_ascii::Animation::from_json(std::str::from_utf8(&animation.stdout).unwrap())
             .unwrap();
     assert_eq!(project.frames().len(), 3);
     let ambiguous = cli(&["animate", "ghost", "--format", "text"]);
@@ -106,9 +106,9 @@ fn list_searches_tags_and_effects_animate_files_and_stdin() {
         "10",
     ]);
     assert!(output.status.success(), "{}", text(&output.stderr));
-    let project = apollinaires_ascii::Animation::from_json(text(&output.stdout)).unwrap();
+    let project = apollinaire_ascii::Animation::from_json(text(&output.stdout)).unwrap();
     assert_eq!(project.frames().len(), 5);
-    let fox = apollinaires_ascii::art::template("fox").unwrap();
+    let fox = apollinaire_ascii::art::template("fox").unwrap();
     assert_eq!(project.frames()[4].frame, fox);
     let leaving = cli(&[
         "effect",
@@ -122,7 +122,7 @@ fn list_searches_tags_and_effects_animate_files_and_stdin() {
         "10",
     ]);
     assert!(leaving.status.success(), "{}", text(&leaving.stderr));
-    let leaving = apollinaires_ascii::Animation::from_json(text(&leaving.stdout)).unwrap();
+    let leaving = apollinaire_ascii::Animation::from_json(text(&leaving.stdout)).unwrap();
     assert!(
         leaving.frames().iter().map(|f| &f.frame).eq(project
             .frames()

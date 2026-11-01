@@ -1,4 +1,4 @@
-use apollinaires_ascii::{Animation, Canvas, Result, SceneOptions, animation};
+use apollinaire_ascii::{Animation, Canvas, Result, SceneOptions, animation};
 
 fn main() -> Result<()> {
     let mut canvas = Canvas::new(24, 6)?;
