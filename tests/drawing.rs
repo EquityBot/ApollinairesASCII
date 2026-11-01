@@ -129,6 +129,19 @@ fn arrowheads_keep_the_edges_they_reach_and_join_lines_that_cross_them() {
     grid.diagram_box((4, 0), (7, 2), "").unwrap();
     grid.connector((0, 1), (4, 1), true).unwrap();
     assert_eq!(text(grid), "    +--+\n--->|  |\n    +--+");
+    let mut grid = blank(8, 3);
+    grid.connector((3, 0), (3, 2), false).unwrap();
+    grid.diagram_box((4, 0), (7, 2), "").unwrap();
+    grid.connector((0, 1), (4, 1), true).unwrap();
+    assert_eq!(text(grid), "   |+--+\n-->+|  |\n   |+--+");
+    // Every cell before the edge is a junction, so no arrowhead fits.
+    let mut grid = blank(5, 3);
+    for x in 1..4 {
+        grid.connector((x, 0), (x, 2), false).unwrap();
+    }
+    grid.diagram_box((4, 0), (4, 2), "").unwrap();
+    grid.connector((1, 1), (4, 1), true).unwrap();
+    assert_eq!(text(grid), " |||+\n +++|\n |||+");
     let mut grid = blank(5, 3);
     grid.connector((2, 0), (2, 2), true).unwrap();
     grid.connector((0, 2), (4, 2), false).unwrap();

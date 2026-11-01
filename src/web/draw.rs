@@ -451,14 +451,12 @@ fn pointer(event: Event) -> Result<()> {
         if app.drawing.tool == Tool::SelectText {
             return Ok(());
         }
-        // Other touches or pens cannot steer a stroke that one pointer started.
-        let ours = app
-            .drawing
-            .stroke
-            .as_ref()
-            .is_some_and(|s| s.pointer == Some(event.pointer_id()));
+        // Other touches or pens can neither steer nor replace a stroke that one pointer started.
+        let (ours, busy) = app.drawing.stroke.as_ref().map_or((false, false), |s| {
+            (s.pointer == Some(event.pointer_id()), s.pointer.is_some())
+        });
         match event.type_().as_str() {
-            "pointerdown" if event.button() == 0 && event.is_primary() => {
+            "pointerdown" if event.button() == 0 && event.is_primary() && (ours || !busy) => {
                 event.prevent_default();
                 let point = cell(app, &event)?;
                 let _ = node::<Element>("grid")?.set_pointer_capture(event.pointer_id());

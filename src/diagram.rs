@@ -109,13 +109,19 @@ impl Canvas {
                 (_, 1) => b'v',
                 _ => b'^',
             };
-            let tip = match landing {
-                Some(cell @ (b'-' | b'|' | b'+')) => {
-                    self.set(end.0, end.1, cell)?;
-                    (end.0 - step.0, end.1 - step.1)
+            let mut tip = end;
+            if let Some(cell @ (b'-' | b'|' | b'+')) = landing {
+                self.set(end.0, end.1, cell)?;
+                // Back off past any junctions; with no plain cell left, draw no arrowhead.
+                let plain = if step.0 == 0 { b'|' } else { b'-' };
+                tip = (end.0 - step.0, end.1 - step.1);
+                while self.get(tip.0, tip.1) != Some(plain) {
+                    if tip == from {
+                        return Ok(());
+                    }
+                    tip = (tip.0 - step.0, tip.1 - step.1);
                 }
-                _ => end,
-            };
+            }
             self.set(tip.0, tip.1, head)?;
         }
         Ok(())
