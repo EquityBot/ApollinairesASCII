@@ -22,21 +22,48 @@ fn locked_packages(lock: &str) -> BTreeSet<String> {
     packages
 }
 
-/// Headings of package sections (a rule, the heading, then `Licence:`), with any duplicates.
-/// Sections for code or fonts copied from outside Cargo give `Source:` under the heading instead.
-fn notice_sections(notices: &str) -> (BTreeSet<String>, Vec<String>) {
-    let mut sections = BTreeSet::new();
-    let mut duplicates = Vec::new();
+/// A `name version` heading, as opposed to free text after a rule inside a licence.
+fn is_package_heading(heading: &str) -> bool {
+    heading.split_once(' ').is_some_and(|(name, version)| {
+        !name.is_empty()
+            && name
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+            && version.starts_with(|c: char| c.is_ascii_digit())
+            && !version.contains(' ')
+    })
+}
+
+struct Sections {
+    headings: BTreeSet<String>,
+    duplicates: Vec<String>,
+    without_licence: Vec<String>,
+}
+
+/// Package sections: a rule, then a `name version` heading, then `Licence:`. Sections for code
+/// or fonts copied from outside Cargo give `Source:` under the heading instead and are skipped.
+fn notice_sections(notices: &str) -> Sections {
+    let mut sections = Sections {
+        headings: BTreeSet::new(),
+        duplicates: Vec::new(),
+        without_licence: Vec::new(),
+    };
     let lines: Vec<_> = notices.lines().collect();
     for window in lines.windows(3) {
-        if let [RULE, heading, licence] = window
-            && licence.starts_with("Licence: ")
-            && !sections.insert(heading.to_string())
-        {
-            duplicates.push(heading.to_string());
+        let [RULE, heading, next] = window else {
+            continue;
+        };
+        if next.starts_with("Source: ") || !is_package_heading(heading) {
+            continue;
+        }
+        if !next.starts_with("Licence: ") {
+            sections.without_licence.push(heading.to_string());
+        }
+        if !sections.headings.insert(heading.to_string()) {
+            sections.duplicates.push(heading.to_string());
         }
     }
-    (sections, duplicates)
+    sections
 }
 
 // Kim Wexler would want every licence on file before anything ships.
@@ -46,13 +73,20 @@ fn notice_bundle_has_one_section_per_locked_package() {
     let lock = std::fs::read_to_string(format!("{root}/Cargo.lock")).unwrap();
     let notices = std::fs::read_to_string(format!("{root}/web/THIRD_PARTY_NOTICES.txt")).unwrap();
     let locked = locked_packages(&lock);
-    let (sections, duplicates) = notice_sections(&notices);
-    let missing: Vec<_> = locked.difference(&sections).collect();
-    let stale: Vec<_> = sections.difference(&locked).collect();
+    let Sections {
+        headings,
+        duplicates,
+        without_licence,
+    } = notice_sections(&notices);
+    let missing: Vec<_> = locked.difference(&headings).collect();
+    let stale: Vec<_> = headings.difference(&locked).collect();
     assert!(
-        missing.is_empty() && stale.is_empty() && duplicates.is_empty(),
+        missing.is_empty()
+            && stale.is_empty()
+            && duplicates.is_empty()
+            && without_licence.is_empty(),
         "web/THIRD_PARTY_NOTICES.txt is out of date with Cargo.lock; see THIRD_PARTY_NOTICES.md\n\
          missing sections: {missing:?}\nsections for unlocked packages: {stale:?}\n\
-         duplicate sections: {duplicates:?}"
+         duplicate sections: {duplicates:?}\nsections without a Licence line: {without_licence:?}"
     );
 }
