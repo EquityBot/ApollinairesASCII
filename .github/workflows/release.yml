@@ -13,8 +13,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Reuse the draft when the workflow is rerun after a partial failure.
-      - run: gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft --verify-tag --generate-notes --title "$GITHUB_REF_NAME"
+      # A rerun after a partial failure reuses the draft; a published release is never touched.
+      - run: |
+          if draft=$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2> /dev/null); then
+            if [ "$draft" != true ]; then
+              echo "::error::$GITHUB_REF_NAME is already published"
+              exit 1
+            fi
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft --verify-tag --generate-notes --title "$GITHUB_REF_NAME"
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -79,7 +87,7 @@ jobs:
       - name: Checksums
         run: |
           mkdir assets && cd assets
-          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern 'apollinaire-*'
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern '*.tar.gz' --pattern '*.zip'
           sha256sum -- * > SHA256SUMS.txt
           gh release upload "$GITHUB_REF_NAME" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false

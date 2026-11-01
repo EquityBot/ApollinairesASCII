@@ -72,7 +72,7 @@ jobs:
       - run: cargo clippy --locked --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
       - run: cargo build --locked --release --target wasm32-unknown-unknown --no-default-features --features web
       - run: wasm-bindgen target/wasm32-unknown-unknown/release/apollinaires_ascii.wasm --target web --out-dir web/pkg --out-name apollinaires_ascii
-      # -O3 keeps conversion speed; size-focused levels slow image and video conversion.
+      # -O3 rather than -Os or -Oz: it favours conversion speed over a few more kilobytes.
       - run: wasm-opt -O3 web/pkg/apollinaires_ascii_bg.wasm -o web/pkg/apollinaires_ascii_bg.wasm
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
