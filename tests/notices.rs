@@ -22,24 +22,18 @@ fn locked_packages(lock: &str) -> BTreeSet<String> {
     packages
 }
 
-/// Heading line after each rule, with any duplicates. Sections for code or fonts copied from
-/// outside Cargo give a `Source:` line under the heading and are skipped.
+/// Headings of package sections (a rule, the heading, then `Licence:`), with any duplicates.
+/// Sections for code or fonts copied from outside Cargo give `Source:` under the heading instead.
 fn notice_sections(notices: &str) -> (BTreeSet<String>, Vec<String>) {
     let mut sections = BTreeSet::new();
     let mut duplicates = Vec::new();
-    let mut lines = notices.lines();
-    while let Some(line) = lines.next() {
-        if line == RULE {
-            let heading = lines.next().unwrap_or_default().to_owned();
-            if lines
-                .next()
-                .is_some_and(|line| line.starts_with("Source: "))
-            {
-                continue;
-            }
-            if !sections.insert(heading.clone()) {
-                duplicates.push(heading);
-            }
+    let lines: Vec<_> = notices.lines().collect();
+    for window in lines.windows(3) {
+        if let [RULE, heading, licence] = window
+            && licence.starts_with("Licence: ")
+            && !sections.insert(heading.to_string())
+        {
+            duplicates.push(heading.to_string());
         }
     }
     (sections, duplicates)
