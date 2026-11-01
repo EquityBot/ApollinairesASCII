@@ -124,6 +124,18 @@ fn connectors_cross_lines_and_attach_to_box_edges() {
 }
 
 #[test]
+fn arrowheads_keep_the_edges_they_reach_and_join_lines_that_cross_them() {
+    let mut grid = blank(8, 3);
+    grid.diagram_box((4, 0), (7, 2), "").unwrap();
+    grid.connector((0, 1), (4, 1), true).unwrap();
+    assert_eq!(text(grid), "    +--+\n--->|  |\n    +--+");
+    let mut grid = blank(5, 3);
+    grid.connector((2, 0), (2, 2), true).unwrap();
+    grid.connector((0, 2), (4, 2), false).unwrap();
+    assert_eq!(text(grid), "  |  \n  |  \n--+--");
+}
+
+#[test]
 fn diagram_output_is_plain_ascii_and_input_is_validated() {
     let mut grid = blank(4, 4);
     assert!(grid.diagram_box((0, 0), (3, 3), "caf\u{e9}").is_err());

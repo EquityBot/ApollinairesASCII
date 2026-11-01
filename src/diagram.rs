@@ -1,7 +1,8 @@
 //! Box-and-arrow diagrams drawn with `+ - | > < ^ v`.
 //!
 //! Strokes join where they meet: a horizontal stroke over a vertical one, or the reverse,
-//! becomes `+`, so boxes, elbows and crossings stay connected. Drawing is clipped to the grid.
+//! becomes `+`, so boxes, elbows and crossings stay connected. Arrowheads count as strokes in
+//! their direction. Drawing is clipped to the grid.
 //!
 //! ```
 //! use apollinaires_ascii::Canvas;
@@ -20,7 +21,7 @@ use crate::{Canvas, Result, canvas::bounds, printable};
 
 fn join(existing: u8, stroke: u8) -> u8 {
     match (existing, stroke) {
-        (b'|' | b'+', b'-') | (b'-' | b'+', b'|') => b'+',
+        (b'|' | b'+' | b'^' | b'v', b'-') | (b'-' | b'+' | b'<' | b'>', b'|') => b'+',
         _ => stroke,
     }
 }
@@ -81,10 +82,12 @@ impl Canvas {
         Ok(())
     }
     /// Draw an orthogonal connector from `start` to `end`: along the longer axis first, then
-    /// one `+` elbow. A single cell is `+`. With `arrow`, the end cell becomes `>`, `<`, `^` or `v` in the final
-    /// direction of travel.
+    /// one `+` elbow. A single cell is `+`. With `arrow`, the end cell becomes `>`, `<`, `^` or
+    /// `v` in the final direction of travel; an end on an existing `-`, `|` or `+` keeps that
+    /// cell and the arrowhead stops just before it.
     pub fn connector(&mut self, start: (i32, i32), end: (i32, i32), arrow: bool) -> Result<()> {
         coordinates([start, end])?;
+        let landing = self.get(end.0, end.1);
         let elbow = if start.0.abs_diff(end.0) >= start.1.abs_diff(end.1) {
             (end.0, start.1)
         } else {
@@ -99,16 +102,21 @@ impl Canvas {
         }
         if arrow {
             let from = if elbow == end { start } else { elbow };
-            let head = if end.0 > from.0 {
-                b'>'
-            } else if end.0 < from.0 {
-                b'<'
-            } else if end.1 > from.1 {
-                b'v'
-            } else {
-                b'^'
+            let step = ((end.0 - from.0).signum(), (end.1 - from.1).signum());
+            let head = match step {
+                (1, _) => b'>',
+                (-1, _) => b'<',
+                (_, 1) => b'v',
+                _ => b'^',
             };
-            self.set(end.0, end.1, head)?;
+            let tip = match landing {
+                Some(cell @ (b'-' | b'|' | b'+')) => {
+                    self.set(end.0, end.1, cell)?;
+                    (end.0 - step.0, end.1 - step.1)
+                }
+                _ => end,
+            };
+            self.set(tip.0, tip.1, head)?;
         }
         Ok(())
     }

@@ -71,7 +71,8 @@ struct Stroke {
     preview: Frame,
     start: (i32, i32),
     last: (i32, i32),
-    keyboard: bool,
+    /// The pointer drawing this stroke, or `None` for the keyboard.
+    pointer: Option<i32>,
     /// Selected contents being moved, with their area before the move.
     lifted: Option<(Frame, Area)>,
 }
@@ -146,6 +147,7 @@ impl App {
             drawing.cursor.0.min(columns - 1),
             drawing.cursor.1.min(rows - 1),
         );
+        drawing.type_column = drawing.type_column.min(columns - 1);
         if !fits {
             drawing.selection = None;
         }
@@ -217,7 +219,7 @@ impl App {
         }
         Ok(())
     }
-    fn begin(&mut self, point: (i32, i32), keyboard: bool) -> Result<()> {
+    fn begin(&mut self, point: (i32, i32), pointer: Option<i32>) -> Result<()> {
         self.clean()?;
         self.pause();
         self.drawing.typing = false;
@@ -253,10 +255,10 @@ impl App {
             base,
             start: point,
             last: point,
-            keyboard,
+            pointer,
             lifted,
         });
-        if keyboard {
+        if pointer.is_none() {
             status(
                 "Started. Move with the arrow keys, press Space to finish or Escape to cancel.",
                 false,
@@ -449,7 +451,12 @@ fn pointer(event: Event) -> Result<()> {
         if app.drawing.tool == Tool::SelectText {
             return Ok(());
         }
-        let pointer_stroke = app.drawing.stroke.as_ref().is_some_and(|s| !s.keyboard);
+        // Other touches or pens cannot steer a stroke that one pointer started.
+        let ours = app
+            .drawing
+            .stroke
+            .as_ref()
+            .is_some_and(|s| s.pointer == Some(event.pointer_id()));
         match event.type_().as_str() {
             "pointerdown" if event.button() == 0 && event.is_primary() => {
                 event.prevent_default();
@@ -461,17 +468,17 @@ fn pointer(event: Event) -> Result<()> {
                 node::<HtmlElement>("art")?
                     .focus_with_options(&options)
                     .map_err(|_| "Cannot focus the artwork")?;
-                app.begin(point, false)?;
+                app.begin(point, Some(event.pointer_id()))?;
             }
-            "pointermove" if pointer_stroke => app.extend(cell(app, &event)?)?,
-            "pointerup" if pointer_stroke => {
+            "pointermove" if ours => app.extend(cell(app, &event)?)?,
+            "pointerup" if ours => {
                 app.extend(cell(app, &event)?)?;
                 app.finish()?;
             }
-            "pointercancel" if pointer_stroke => app.cancel(),
+            "pointercancel" | "lostpointercapture" if ours => app.cancel(),
             _ => return Ok(()),
         }
-        app.render()
+        app.display(false)
     })
 }
 fn key(event: Event) -> Result<()> {
@@ -532,13 +539,13 @@ fn key(event: Event) -> Result<()> {
             if app.drawing.stroke.is_some() {
                 app.finish()?;
             } else {
-                app.begin(app.drawing.cursor, true)?;
+                app.begin(app.drawing.cursor, None)?;
             }
         } else {
             return Ok(());
         }
         event.prevent_default();
-        app.render()
+        app.display(false)
     })
 }
 fn clipboard(event: Event) -> Result<()> {
@@ -567,7 +574,7 @@ fn clipboard(event: Event) -> Result<()> {
             _ => return Ok(()),
         }
         event.prevent_default();
-        app.render()
+        app.display(false)
     })
 }
 fn button(id: &str) -> Result<()> {
@@ -606,19 +613,30 @@ fn button(id: &str) -> Result<()> {
             }
             _ => return Err("Unknown drawing action".into()),
         }
-        app.render()
+        app.display(false)
     })
 }
 
 pub(super) fn listen_all() -> std::result::Result<(), wasm_bindgen::JsValue> {
-    for name in ["pointerdown", "pointermove", "pointerup", "pointercancel"] {
+    for name in [
+        "pointerdown",
+        "pointermove",
+        "pointerup",
+        "pointercancel",
+        "lostpointercapture",
+    ] {
         listen("grid", name, move |event| report(pointer(event)))?;
     }
     listen("art", "keydown", move |event| report(key(event)))?;
     listen("art", "blur", move |_| {
         report(state(|app| {
             app.drawing.typing = false;
-            if app.drawing.stroke.as_ref().is_some_and(|s| s.keyboard) {
+            if app
+                .drawing
+                .stroke
+                .as_ref()
+                .is_some_and(|s| s.pointer.is_none())
+            {
                 app.cancel();
             }
             app.render()
