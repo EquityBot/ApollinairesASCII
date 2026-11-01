@@ -211,7 +211,7 @@ impl App {
             ("area-paste", drawing.clipboard.is_none() || !drawing_tool),
             ("stamp-text", drawing.tool != Tool::Type),
         ] {
-            toggle(id, "disabled", disabled || self.loading)?;
+            toggle(id, "disabled", disabled || self.loading || live)?;
         }
         Ok(())
     }
@@ -398,6 +398,7 @@ impl App {
         Ok(())
     }
     fn area_text(&mut self) -> Result<String> {
+        self.clean()?;
         let (x, y, width, height) = self.drawing.selection.ok_or("Select an area first.")?;
         let contents = self.frame().crop(x as usize, y as usize, width, height)?;
         let text = contents.text();
