@@ -30,9 +30,9 @@ Ghostty, other compared projects and their artwork are not bundled. The 89 catal
 
 ## Refreshing the dependency bundle
 
-`tests/notices.rs` runs with `cargo test` and fails when `web/THIRD_PARTY_NOTICES.txt` and `Cargo.lock` disagree. It lists missing sections, sections for packages no longer locked and duplicate sections. Each locked package with a `source` needs one section; this crate, and any path crate in this repository, is covered by the licence at the top of the bundle. Sections for code or fonts copied from outside Cargo, such as FIGlet and TOIlet, have a `Source:` line under their heading and are not checked. To fix the bundle:
+`tests/notices.rs` runs with `cargo test` and fails when `web/THIRD_PARTY_NOTICES.txt` and `Cargo.lock` disagree. It lists missing sections, sections for packages no longer locked, duplicate sections and package sections without a `Licence:` line. Each locked package with a `source` needs one section; this crate, and any path crate in this repository, is covered by the licence at the top of the bundle. Sections for code or fonts copied from outside Cargo, such as FIGlet and TOIlet, have a `Source:` line under their heading and are not checked. To fix the bundle:
 
-1. Delete each stale or duplicate section, from its rule line to the next rule.
+1. Delete each stale or duplicate section, from its rule line to the next rule, and fix any `Licence:` label.
 2. Run `cargo metadata --format-version 1 --locked` to find each missing package's `license` (or `license_file`) and `manifest_path`.
 3. Add a section for it in alphabetical order, before the sections with a `Source:` line:
 
