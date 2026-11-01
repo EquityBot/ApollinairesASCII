@@ -23,7 +23,7 @@ At this check, the latest stable `image` and `figlet-rs` releases still require 
 
 ## CLI HTTPS client
 
-`ureq` 3.5.0 downloads `https://` image URLs for `apollinaire image`. It is optional and enabled only by the `cli` feature, with its gzip support off and the `rustls` TLS backend, which brings `ring` and the `webpki-roots` certificate bundle. The library built with `default-features = false` and the browser module do not compile it. Responses are limited to 16 MiB, 30 seconds, 5 redirects, HTTPS throughout and an `image/` content type before the bytes reach the same image decoder and limits as local files. These crates were added after the Aikido scans above and have not been scanned by it.
+`ureq` 3.5.0 downloads `https://` image URLs for `apollinaire image`. It is optional and enabled only by the `cli` feature, with its gzip support off and the `rustls` TLS backend, which brings `ring` and the `webpki-roots` certificate bundle. The library built with `default-features = false` and the browser module do not compile it. Responses are limited to 16 MiB, 30 seconds, 5 redirects, HTTPS throughout and an `image/` content type before the bytes reach the same image decoder and limits as local files. On 1 November 2026 an Aikido dependency scan of `Cargo.lock` at 7728d14 covered all 107 locked packages, including these, and reported only the 5 alerts above. `cargo audit` 0.22.2 with the RustSec database of that day reported only `RUSTSEC-2026-0367`, `RUSTSEC-2026-0368` and `RUSTSEC-2026-0369`, the same `zip` 0.6.6 extraction defects, which this application does not call.
 
 ## Source scan
 
