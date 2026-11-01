@@ -40,10 +40,11 @@
           <textarea id="message" rows="2" maxlength="512">HELLO, FRIEND</textarea>
         </div>
         <div id="letter-fields" hidden>
-          <label for="font">Lettering style</label>
-          <select id="font"><option>standard</option><option>small</option><option>big</option><option>slant</option><option>block</option><option>outline</option><option value="custom" id="custom-option" disabled>Uploaded FIGlet font</option></select>
-          <label for="align">Alignment</label><select id="align"><option value="center">Centre</option><option value="left">Left</option><option value="right">Right</option></select>
-          <label for="font-file">Optional FIGlet font (.flf, up to 512 KiB)</label><input id="font-file" type="file" accept=".flf">
+          <label for="font">Font</label>
+          <select id="font"><option value="custom" id="custom-option" disabled>Uploaded font</option></select>
+          <div class="pair"><div><label for="horizontal">Letter spacing</label><select id="horizontal"><option value="default">Font default</option><option value="full">Full width</option><option value="fitted">Fitted</option><option value="smush">Smushed</option></select></div><div><label for="vertical">Line spacing</label><select id="vertical"><option value="default">Font default</option><option value="full">Full height</option><option value="fitted">Fitted</option><option value="smush">Smushed</option></select></div></div>
+          <div class="pair"><div><label for="align">Alignment</label><select id="align"><option value="center">Centre</option><option value="left">Left</option><option value="right">Right</option></select></div><div><label for="wrap">Wrap at column</label><input id="wrap" type="number" min="1" max="512" placeholder="No wrap"></div></div>
+          <label for="font-file">Optional FIGlet or TOIlet font (.flf or .tlf, up to 1 MiB)</label><input id="font-file" type="file" accept=".flf,.tlf">
         </div>
         <div class="pair"><div><label for="width">Columns</label><input id="width" type="number" min="1" max="512" value="72"></div><div><label for="height">Rows</label><input id="height" type="number" min="1" max="256" value="24"></div></div>
         <label class="check"><input id="border" type="checkbox"> Add a text border</label>

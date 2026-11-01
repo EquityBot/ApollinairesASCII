@@ -12,18 +12,17 @@ Cargo applies `[patch]` only from a workspace root. Downstream Rust applications
 
 | Locked package | Aikido alerts | Current application reachability |
 | --- | --- | --- |
-| `zip` 0.6.6, through `figlet-rs` 1.0.0 | `CVE-2026-115905`, `CVE-2026-115906`, `AIKIDO-2026-476773`, `AIKIDO-2026-306911` | Archive handling is not called. Only validated plain FLF content and embedded fonts reach `FIGlet::from_content` / built-in methods. |
 | `moxcms` 0.8.1, through `image` 0.25.10 | `AIKIDO-2026-175889` | Its affected ICC byte parser is not called. Conversion decodes pixels without interpreting embedded ICC profiles. |
-
-The ZIP dependency's file/byte loading APIs invoke archive support; ApollinairesASCII does not expose or call those APIs. Its CLI reads a font as bounded UTF-8 text and passes it through the same plain-font validator as the browser. Compressed font archives are refused. See the [ZIP publisher advisory](https://github.com/zip-rs/zip2/security/advisories/GHSA-m665-v7pm-7grj).
 
 `DynamicImage::from_decoder` in the locked image crate decodes pixels and assumes sRGB. It does not pass embedded ICC bytes to `moxcms::ColorProfile::new_from_slice` or `new_from_slice_with_options`. Image's profile construction uses built-in colour metadata. This supports non-reachability of the specific ICC LUT parsing alert; it is not a conclusion about every colour-processing defect. See the [moxcms 0.9.0 fixes](https://github.com/awxkee/moxcms/releases/tag/0.9.0).
 
-At this check, the latest stable `image` and `figlet-rs` releases still require the older dependency ranges. The 5 alerts remain visible and are not ignored or snoozed in the scanner. Reassess these conclusions when adding archive APIs, ICC colour management or changing the dependency graph. Upgrade through upstream releases when compatible fixes become available.
+At this check, the latest stable `image` release still requires the older dependency range. The alert remains visible and is not ignored or snoozed in the scanner.
+
+ApollinairesASCII replaced `figlet-rs` 1.0.0 with its own FIGlet renderer on 1 November 2026, which removed `zip` 0.6.6 and its 4 alerts (`CVE-2026-115905`, `CVE-2026-115906`, `AIKIDO-2026-476773`, `AIKIDO-2026-306911`) from Cargo.lock. Aikido has not been rerun since that change. Fonts are read as bounded plain text; compressed font archives are refused. Reassess these conclusions when adding archive APIs, ICC colour management or changing the dependency graph. Upgrade through upstream releases when compatible fixes become available.
 
 ## CLI HTTPS client
 
-`ureq` 3.5.0 downloads `https://` image URLs for `apollinaire image`. It is optional and enabled only by the `cli` feature, with its gzip support off and the `rustls` TLS backend, which brings `ring` and the `webpki-roots` certificate bundle. The library built with `default-features = false` and the browser module do not compile it. Responses are limited to 16 MiB, 30 seconds, 5 redirects, HTTPS throughout and an `image/` content type before the bytes reach the same image decoder and limits as local files. On 1 November 2026 an Aikido dependency scan of `Cargo.lock` at 7728d14 covered all 107 locked packages, including these, and reported only the 5 alerts above. `cargo audit` 0.22.2 with the RustSec database of that day reported only `RUSTSEC-2026-0367`, `RUSTSEC-2026-0368` and `RUSTSEC-2026-0369`, all in `zip` 0.6.6 archive extraction. As with the `zip` alerts above, only built-in fonts and validated FLF content reach `figlet-rs`, so no archive is extracted.
+`ureq` 3.5.0 downloads `https://` image URLs for `apollinaire image`. It is optional and enabled only by the `cli` feature, with its gzip support off and the `rustls` TLS backend, which brings `ring` and the `webpki-roots` certificate bundle. The library built with `default-features = false` and the browser module do not compile it. Responses are limited to 16 MiB, 30 seconds, 5 redirects, HTTPS throughout and an `image/` content type before the bytes reach the same image decoder and limits as local files. On 1 November 2026 an Aikido dependency scan of `Cargo.lock` at 7728d14 covered all 107 locked packages, including these, and reported only the 5 alerts above. `cargo audit` 0.22.2 with the RustSec database of that day reported only `RUSTSEC-2026-0367`, `RUSTSEC-2026-0368` and `RUSTSEC-2026-0369`, all in `zip` 0.6.6 archive extraction. All 3 left with `zip` when `figlet-rs` was replaced; `cargo audit` has not been rerun since.
 
 ## Source scan
 
