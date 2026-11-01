@@ -41,7 +41,10 @@ Download the archive for your platform from [Releases](https://github.com/Equity
 From v0.3.0, each archive has a signed build provenance attestation. To confirm an archive was built by this repository's release workflow from its release tag, run:
 
 ```sh
-gh attestation verify apollinaire-v0.3.0-x86_64-unknown-linux-musl.tar.gz \n  --repo EquityBot/ApollinaireASCII \n  --signer-workflow EquityBot/ApollinaireASCII/.github/workflows/release.yml \n  --source-ref refs/tags/v0.3.0
+gh attestation verify apollinaire-v0.3.0-x86_64-unknown-linux-musl.tar.gz \
+  --repo EquityBot/ApollinaireASCII \
+  --signer-workflow EquityBot/ApollinaireASCII/.github/workflows/release.yml \
+  --source-ref refs/tags/v0.3.0
 ```
 
 To build from source instead, install [Rust](https://www.rust-lang.org/tools/install), then:
