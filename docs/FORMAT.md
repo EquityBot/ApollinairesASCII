@@ -25,7 +25,7 @@ All fields are required and no additional or duplicate fields are accepted. JSON
 | Media dimensions | 4,096 per side, 16,777,216 pixels |
 | Image decoder allocation limit | 128 MiB |
 | GIF logical-screen pixels across frames | 64,000,000 |
-| Custom font file | 512 KiB |
+| Custom font file | 1 MiB |
 | Video and camera sampling | 1 to 60 frames per second; camera recordings of 1 to 60 seconds |
 | Video and camera pixels read per frame | 2 per output column across, aspect preserved |
 | Custom font height / row length | 32 rows / 256 bytes |
@@ -35,6 +35,8 @@ Video and camera input in the browser is checked against the frame, cell and med
 
 GIF headers, image rectangles, frame count, aggregate decoded screen pixels and output cell budget are inspected before frame decoding. Image rectangles must be nonzero and fit inside the logical screen. Decoder limits complement these checks; they are not a process-wide memory cap. The browser retains the current project, bounded history and temporary decode data, so peak memory can exceed the stored character count.
 
-Plain FLF fonts must define all 95 printable ASCII glyphs with printable ASCII rows of equal width within each glyph and valid end markers. Markers may differ between glyphs. One or two markers per row are normalised for the font renderer. Extended codepoints and tagged glyphs are ignored because input lettering accepts printable ASCII only. Compressed font archives are not accepted. Rendering that exceeds canvas limits is refused.
+Plain FIGlet `.flf` and TOIlet `.tlf` fonts must define all 95 printable ASCII glyphs, with rows of equal width within each glyph and one or two end markers. Markers may differ between glyphs. Every glyph in the file, including the 7 German and any code-tagged glyphs, must be drawn in printable ASCII once the hardblank becomes a space; otherwise the font is refused with the glyph, row and byte named. Comments may contain any UTF-8. Compressed font archives are not accepted. Rendering that exceeds canvas limits, or a glyph wider than the wrap width, is refused.
+
+Horizontal layout and word wrap follow figlet 2.2.5. Vertical layout follows the FIGfont 2 specification as figlet.js implements it, with one difference: figlet.js smushes lines vertically by default whenever a font lists vertical smushing rules, whereas the specification, and ApollinairesASCII, apply those rules only when the font's header or the user selects vertical smushing. Bundled lean, mini, script, shadow and figlet-block therefore stack lines at full height by default.
 
 JSON stores characters and timing, not pixels. HTML exports embed the JSON safely and put each frame into a `<pre>` using `textContent`; they contain a small standalone JavaScript player. Neither format includes raster or vector artwork. The player starts paused, supports stepping and pauses on a hidden page or a change to reduced motion.

@@ -12,6 +12,8 @@ apollinaire effect wave movie.json --source-frame 4 --output wave.json
 apollinaire effect scatter --art ghost --reverse --output goodbye.json
 apollinaire text "Hello" --font small --align center --width 72
 apollinaire text "RUST" --font-file my-font.flf
+apollinaire text "Hello there, friend" --font smslant --wrap 30 --align center
+apollinaire text "$(printf 'TOP\nLOW')" --horizontal smush --vertical fitted
 apollinaire animate donut --width 72 --height 24 --frames 120 --fps 30 --output donut.json
 apollinaire animate scroll --text "HELLO, FRIEND" --seed 42 --output scroll.html
 apollinaire image photo.jpg --width 100 --ramp fine --gamma 1.2 --contrast 1.3 --dither
@@ -45,5 +47,7 @@ Use `-` as the input path for stdin. `.json` input is always parsed as a project
 `image` accepts several inputs with `--output-dir DIR`. It creates the directory if needed and writes one new file per input, named after the input's file name plus the output extension: `.txt` for a still and `.json` for an animated GIF unless `--format` says otherwise, so `clip.gif` becomes `clip.gif.json`. Inputs whose names would collide, ignoring letter case, are refused before anything is written. Existing files are never replaced. A failed input is reported on stderr and the others are still converted; the exit status is nonzero if any input failed.
 
 An `image` input starting with `https://` is downloaded: at most 16 MiB, within 30 seconds including at most 5 redirects, all over HTTPS. The response must have an `image/` content type, otherwise the command fails with the type it received. Plain `http://` is refused. The CLI is the only part that uses the network; the library and browser editor never do.
+
+`text` uses figlet's layout rules. `--horizontal` sets how letters join and `--vertical` how lines of lettering join: `default` (the font's own setting), `full` (no overlap), `fitted` (touching) or `smush` (merged by the font's smushing rules, or universally when the font has none). `--wrap N` breaks lines at spaces, or inside a word that is too long, so none exceeds N columns; it matches `figlet -w N+1`, because figlet reserves the terminal's last column. `--width` sets the canvas width that `--align` uses and does not wrap. `apollinaire list` names the bundled fonts. `--font-file` accepts a plain FIGlet `.flf` or TOIlet `.tlf` file up to 1 MiB whose every glyph is drawn in printable ASCII; files with other bytes in any glyph, and compressed fonts, are refused with the glyph and byte named.
 
 `play` requires a terminal and refuses redirected stdout. It uses ANSI clear/cursor commands solely to update terminal text. It does not put those codes in the project or any text export. It plays the requested number of cycles; the project's loop setting controls the browser and standalone player. Unsupported media and malformed input fail visibly.

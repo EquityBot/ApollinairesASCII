@@ -329,6 +329,13 @@ pub fn start() -> std::result::Result<(), JsValue> {
         listen(id, "change", move |_| begin_file(id))?;
     }
     media::start()?;
+    let fonts = node::<Element>("font").map_err(|e| JsValue::from_str(&e))?;
+    let uploaded = node::<Element>("custom-option").map_err(|e| JsValue::from_str(&e))?;
+    for name in lettering::FONTS {
+        let option = document().create_element("option")?;
+        option.set_text_content(Some(name));
+        fonts.insert_before(&option, Some(&uploaded))?;
+    }
     let visibility = Closure::<dyn FnMut(Event)>::new(move |_| {
         if document().hidden() {
             report(state(|app| {
@@ -455,21 +462,42 @@ fn generate(app: &mut App) -> Result<()> {
         "letters" => {
             let font = select("font")?;
             let custom = if font == "custom" {
-                Some(app.font.as_deref().ok_or("Choose a FIGlet font first")?)
+                Some(app.font.as_deref().ok_or("Choose a font file first")?)
             } else {
                 None
             };
-            let align = match select("align")?.as_str() {
-                "left" => lettering::Alignment::Left,
-                "right" => lettering::Alignment::Right,
-                _ => lettering::Alignment::Center,
+            let layout = |id| -> Result<lettering::Layout> {
+                Ok(match select(id)?.as_str() {
+                    "full" => lettering::Layout::Full,
+                    "fitted" => lettering::Layout::Fitted,
+                    "smush" => lettering::Layout::Smush,
+                    _ => lettering::Layout::Default,
+                })
             };
-            Animation::still(lettering::render(
+            let wrap = input("wrap")?.value();
+            let options = lettering::Options {
+                alignment: match select("align")?.as_str() {
+                    "left" => lettering::Alignment::Left,
+                    "right" => lettering::Alignment::Right,
+                    _ => lettering::Alignment::Center,
+                },
+                width: Some(width),
+                wrap: if wrap.is_empty() {
+                    None
+                } else {
+                    Some(
+                        wrap.parse()
+                            .map_err(|_| "Wrap width must be a whole number")?,
+                    )
+                },
+                horizontal: layout("horizontal")?,
+                vertical: layout("vertical")?,
+            };
+            Animation::still(lettering::render_with(
                 &text("message")?,
                 &font,
                 custom,
-                align,
-                Some(width),
+                &options,
             )?)
         }
         "blank" => Animation::still(Frame::blank(width, height)?),
@@ -764,7 +792,7 @@ fn begin_file(id: &'static str) {
             .and_then(|files| files.get(0))
             .ok_or("Choose a file first")?;
         let limit = if id == "font-file" {
-            512 * 1024
+            1024 * 1024
         } else {
             MAX_INPUT_BYTES
         };
@@ -804,8 +832,8 @@ fn begin_file(id: &'static str) {
                 return Err("File exceeds 16 MiB".into());
             }
             if id == "font-file" {
-                let contents =
-                    String::from_utf8(bytes).map_err(|_| "Font must be UTF-8 FLF text")?;
+                let contents = String::from_utf8(bytes)
+                    .map_err(|_| "Font must be plain UTF-8 .flf or .tlf text")?;
                 lettering::render(
                     "ASCII",
                     "custom",
@@ -818,7 +846,7 @@ fn begin_file(id: &'static str) {
                     .remove_attribute("disabled")
                     .map_err(|_| "Cannot enable font")?;
                 node::<HtmlSelectElement>("font")?.set_value("custom");
-                status("FIGlet font loaded. Generate lettering to use it.", false);
+                status("Font loaded. Generate lettering to use it.", false);
             } else {
                 let project = if let Some(options) = options {
                     decode_media(&bytes, &options)?

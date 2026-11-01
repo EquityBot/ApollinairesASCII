@@ -256,3 +256,38 @@ fn image_batches_create_one_file_per_input_and_never_overwrite() {
     assert!(text(&plain.stderr).contains("Only https:// URLs are accepted"));
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn text_accepts_layout_wrap_and_ascii_toilet_fonts_only() {
+    let wrapped = cli(&[
+        "text",
+        "Present day",
+        "--wrap",
+        "40",
+        "--horizontal",
+        "fitted",
+        "--vertical",
+        "smush",
+    ]);
+    assert!(wrapped.status.success());
+    let rows: Vec<&[u8]> = wrapped
+        .stdout
+        .trim_ascii_end()
+        .split(|b| *b == b'\n')
+        .collect();
+    assert!(rows.len() > 6 && rows.iter().all(|r| r.len() <= 40));
+    let mut font = String::from("tlf2a$ 1 1 4 -1 0\n");
+    for byte in 32..=126u8 {
+        let marker = if byte == b'@' { '#' } else { '@' };
+        font.push_str(&format!("{}{marker}\n", char::from(byte)));
+    }
+    let path = std::env::temp_dir().join(format!("apollinaire-cli-{}.tlf", std::process::id()));
+    std::fs::write(&path, &font).unwrap();
+    let ok = cli(&["text", "Hi", "--font-file", path.to_str().unwrap()]);
+    assert_eq!(ok.stdout, b"Hi\n");
+    std::fs::write(&path, font.replace("H@\n", "\u{2588}@\n")).unwrap();
+    let refused = cli(&["text", "Hi", "--font-file", path.to_str().unwrap()]);
+    assert!(!refused.status.success() && refused.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("glyph 'H' row 1 has byte 0xe2"));
+    std::fs::remove_file(&path).unwrap();
+}
