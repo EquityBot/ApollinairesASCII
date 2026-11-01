@@ -24,6 +24,30 @@ figlet.js 1.12.0 ships 332 fonts. Its fonts are not bundled: 20 of the 21 whose 
 
 ## Other dependencies
 
-Cargo.toml and Cargo.lock record direct and transitive Rust dependencies. The [browser notice bundle](web/THIRD_PARTY_NOTICES.txt) includes the root licence files for all 100 locked dependencies, the FIGlet, figlet.js and TOIlet licences and the bundled font headers, covering native and browser builds. Release archives include it as `DEPENDENCY_NOTICES.txt`. Refresh it when Cargo.lock changes. The CLI's HTTPS client (`ureq`, `rustls`, `ring` and `webpki-roots`) adds ISC, BSD-3-Clause and CDLA-Permissive-2.0 terms alongside MIT and Apache-2.0; these crates are not part of the library without the `cli` feature or of the browser build. Dependencies retain their own licences; the repository's MIT licence does not replace those terms. GIF frames are decoded in this repository with `weezl` 0.2.1 rather than the `gif` crate; see [dependency notes](docs/DEPENDENCIES.md).
+Cargo.toml and Cargo.lock record direct and transitive Rust dependencies. The [browser notice bundle](web/THIRD_PARTY_NOTICES.txt) includes the root licence files for every locked dependency, the FIGlet, figlet.js and TOIlet licences and the bundled font headers, covering native and browser builds. Release archives include it as `DEPENDENCY_NOTICES.txt`. Refresh it when Cargo.lock changes, as described below. The CLI's HTTPS client (`ureq`, `rustls`, `ring` and `webpki-roots`) adds ISC, BSD-3-Clause and CDLA-Permissive-2.0 terms alongside MIT and Apache-2.0; these crates are not part of the library without the `cli` feature or of the browser build. Dependencies retain their own licences; the repository's MIT licence does not replace those terms. GIF frames are decoded in this repository with `weezl` 0.2.1 rather than the `gif` crate; see [dependency notes](docs/DEPENDENCIES.md).
 
 Ghostty, other compared projects and their artwork are not bundled. The 89 catalogue pieces in `src/art.rs`, the text effects and the procedural scenes were made for this repository and are covered by its MIT licence. No catalogue artwork was copied from another project.
+
+## Refreshing the dependency bundle
+
+`tests/notices.rs` runs with `cargo test` and fails when `web/THIRD_PARTY_NOTICES.txt` and `Cargo.lock` disagree. It lists missing sections, sections for packages no longer locked and duplicate sections. Each locked package with a `source` needs one section; this crate is covered by the licence at the top of the bundle. To fix the bundle:
+
+1. Delete each stale section, from its rule line to the next rule.
+2. Run `cargo metadata --format-version 1 --locked` to find each missing package's `license` and `manifest_path`.
+3. Add a section for it in alphabetical order, before the figlet-rs font headers:
+
+   ```text
+   ============================================================
+   name version
+   Licence: <license field, verbatim>
+
+   --- LICENSE-APACHE ---
+   <file contents>
+
+   --- LICENSE-MIT ---
+   <file contents>
+
+   ```
+
+   Include every file whose name starts with `LICENSE`, `COPYING` or `COPYRIGHT`, in any case, from the directory containing `manifest_path`, in name order.
+4. Update the date on the bundle's second line and run `cargo test --locked --test notices`.
