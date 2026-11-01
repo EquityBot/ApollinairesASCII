@@ -187,14 +187,16 @@ fn rows(height: u32, interlaced: bool) -> Box<dyn Iterator<Item = u32>> {
     }
 }
 
+// Declared here, not inside `tests`, so the path resolves from `src/` on every platform.
+#[cfg(test)]
+#[path = "../tests/common/mod.rs"]
+mod common;
+
 #[cfg(test)]
 mod tests {
+    use super::common::{GifFrame, gif};
     use super::for_each_frame;
     use image::Rgba;
-
-    #[path = "../../../tests/common/mod.rs"]
-    mod common;
-    use common::{GifFrame, gif};
 
     const RED: [u8; 3] = [255, 0, 0];
     const GREEN: [u8; 3] = [0, 255, 0];
