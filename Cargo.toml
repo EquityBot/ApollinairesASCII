@@ -9,7 +9,8 @@ repository = "https://github.com/EquityBot/ApollinaireASCII"
 homepage = "https://equitybot.github.io/ApollinaireASCII/"
 readme = "README.md"
 categories = ["command-line-utilities", "multimedia::images", "text-processing", "wasm"]
-include = ["/src", "/tests", "/examples", "/LICENSES", "/README.md", "/LICENSE.md", "/THIRD_PARTY_NOTICES.md"]
+# notices.rs checks web/, which the package leaves out.
+include = ["/src", "/tests", "!/tests/notices.rs", "/examples", "/LICENSES", "/README.md", "/LICENSE.md", "/THIRD_PARTY_NOTICES.md"]
 keywords = ["ascii", "art", "figlet", "animation", "wasm"]
 
 [lib]
@@ -27,15 +28,11 @@ web = ["dep:wasm-bindgen", "dep:web-sys", "dep:js-sys", "dep:wasm-bindgen-future
 
 [dependencies]
 clap = { version = "4.6.7", features = ["derive"], optional = true }
-figlet-rs = "1.0.0"
-image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "pnm"] }
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "webp", "bmp", "pnm"] }
 serde = "1"
 serde_json = "1"
 ureq = { version = "3.5.0", default-features = false, features = ["rustls"], optional = true }
-
-[patch.crates-io]
-# Official GIF fix uses weezl 0.2.1; remove this pin when a release includes it.
-gif = { git = "https://github.com/image-rs/image-gif", rev = "e60e4dd7708cc50f9371185cefa04273f410f116" }
+weezl = "0.2.1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = { version = "=0.2.130", optional = true }

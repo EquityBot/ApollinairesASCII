@@ -5,6 +5,8 @@ use apollinaires_ascii::{
 use image::{DynamicImage, Rgba, RgbaImage};
 use lettering::Alignment;
 
+mod common;
+
 fn ascii(frame: &Frame) {
     assert_eq!(frame.cells().len(), frame.width() * frame.height());
     assert!(frame.cells().iter().all(|b| (32..=126).contains(b)));
@@ -585,28 +587,12 @@ fn every_image_mode_obeys_ascii_and_rejects_invalid_options() {
     assert!(decode_media(b"P6\n5000 1\n255\n", &RenderOptions::default()).is_err());
 }
 fn gif_bytes(count: usize) -> Vec<u8> {
-    let mut bytes = Vec::new();
-    {
-        let mut encoder = image::codecs::gif::GifEncoder::new(&mut bytes);
-        let frames = (0..count).map(|i| {
-            image::Frame::from_parts(
-                RgbaImage::from_pixel(
-                    2,
-                    2,
-                    if i % 2 == 0 {
-                        Rgba([255, 255, 255, 255])
-                    } else {
-                        Rgba([0, 0, 0, 255])
-                    },
-                ),
-                0,
-                0,
-                image::Delay::from_numer_denom_ms(if i % 2 == 0 { 20 } else { 70 }, 1),
-            )
-        });
-        encoder.encode_frames(frames).unwrap();
-    }
-    bytes
+    let frames: Vec<_> = (0..count)
+        .map(|i| {
+            common::GifFrame::full(2, 2, vec![(i % 2) as u8; 4], if i % 2 == 0 { 2 } else { 7 })
+        })
+        .collect();
+    common::gif(2, 2, Some(&[[255, 255, 255], [0, 0, 0]]), &frames)
 }
 #[test]
 fn animated_gif_import_preserves_frames_delays_and_predecode_limits() {

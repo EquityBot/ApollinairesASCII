@@ -8,16 +8,16 @@ Local validation on 1 November 2026 used Rust 1.99.1, Windows MSVC, Linux x86_64
 | --- | --- |
 | Linux `cargo build --locked`, `cargo test --locked`, Clippy across all native targets with warnings denied and formatting | Passed |
 | Windows release build, native tests, Clippy across all native targets with warnings denied and formatting | Passed |
-| Native tests | 20 contract tests, 10 drawing tests, 8 video and camera sampling tests, 5 CLI integration tests, 5 CLI download tests and 2 documentation examples passed |
+| Native tests | 20 contract tests, 10 drawing tests, 8 video and camera sampling tests, 5 lettering tests, 6 CLI integration tests, 5 CLI download tests and 2 documentation examples passed |
 | Library example | Compiled and ran successfully |
 | WebAssembly release build and Clippy with warnings denied | Passed with the `web` feature and default features disabled |
 | wasm-bindgen | Generated browser bindings using pinned CLI version 0.2.130 |
 | Editor tests in a headless browser | 16 `wasm-bindgen-test` cases passed in Chromium 156 headless shell on Windows; each of 9 deliberate defects (typing runs committed per key, a selectable onion layer, onion skin during playback, no diagram junctions, pointer cells off by one, no stroke preview, a swallowed stamp error, CRLF kept on import, unapplied edits ignored) failed at least one case |
 | GitHub workflow syntax | Passed actionlint |
 | Aikido source scan | Zero issues across 15 files; zero skipped paths |
-| Aikido dependency scan | Reachable weezl alert fixed; 5 remaining transitive alerts documented in [dependency notes](DEPENDENCIES.md); rescanned with the HTTPS client crates on 1 November 2026, no new alerts |
+| Aikido dependency scan | Reachable weezl alert fixed; 5 remaining transitive alerts at that scan, 4 of them since removed with `figlet-rs`; see [dependency notes](DEPENDENCIES.md). Rescanned with the HTTPS client crates on 1 November 2026, no new alerts |
 
-Contract tests cover every control/non-ASCII byte, trailing spaces and rectangular parsing, drawing and transforms, all 95 printable characters across the 6 styles, original templates and scenes, deterministic seeds, per-frame timing, JSON validation and round trips, GIF timing/truncation/preflight bounds, image ramp modes, HTML injection strings and CLI output protection.
+Contract tests cover every control/non-ASCII byte, trailing spaces and rectangular parsing, drawing and transforms, all 95 printable characters across the 6 styles, original templates and scenes, deterministic seeds, per-frame timing, JSON validation and round trips, GIF timing/truncation/preflight bounds, GIF decoding (transparency, disposal, interlacing, palettes, repeated clear codes and malformed LZW or block structure), image ramp modes, HTML injection strings and CLI output protection.
 
 Effect tests run all 11 effects on catalogue art, block lettering, single characters and a blank frame at 4 duration and FPS settings. They check the frame count, equal dimensions, printable ASCII, determinism, seed use, the final frame and the duration, FPS and cell limits. Catalogue tests check at least 60 uniquely named pieces, valid categories and tags, size, trimmed edge rows and tag search. CLI tests cover `list --tag`, effects from files and stdin, batch conversion, collision and overwrite refusal, partial failure reporting and plain-HTTP refusal. Download tests use a loopback test server, never the internet, for image content, a non-image content type, oversized bodies with and without a length, and a timeout.
 
@@ -26,6 +26,16 @@ Browser checks for the effects release used the in-app browser over local HTTP: 
 On 1 November 2026 a Linux x86-64 build of 7728d14 (Arch Linux, Rust 1.99.1) passed `cargo test --locked`, and the binary from `cargo build --locked --release` listed catalogue tags, made a 5-frame, 500 ms effect, refused to overwrite its output, converted an `https://` GIF to 44 frames, and refused an HTML page and a plain `http://` URL. Every frame was printable ASCII.
 
 Independent code reviews found defects in JSON allocation, frame line allocation, GIF rectangles, font markers, ambiguous stdin, asynchronous edits, empty-frame editing and preview overflow. They were repaired and checked. The malformed-font, GIF-rectangle and duplicate-project-field tests reproduced their failures before repair; browser probes likewise reproduced editable-during-load, empty-edit rejection and negative tall-preview positioning before repair.
+
+## Lettering reference checks
+
+On 1 November 2026 the renderer was compared with figlet 2.2.5, built from cmatsuoka/figlet `202a0a8` on Linux, and figlet.js 1.12.0, using the bundled font files:
+
+- Horizontal layout and word wrap: 1,260 of 1,260 cases matched figlet exactly (21 fonts, 5 texts with smushing-rule characters, `-s`, `-W`, `-k` and `-S`, no wrap and wraps of 30 and 45 columns).
+- Vertical layout: 185 of 185 cases matched figlet.js with full-width horizontal layout (13 fonts, 5 multiline texts, full, fitted, smushed and default vertical layout). The 20 excluded default-layout cases are the documented specification difference in [the format notes](FORMAT.md). figlet.js fitting keeps the first glyph's leading blank columns where figlet drops them, so fitted horizontal layout was compared only against figlet.
+- The fixtures in `tests/fixtures/lettering` come from those 2 programs, and `tests/lettering.rs` checks each layout mode against them.
+
+The browser editor listed all 21 fonts and the 2 styles, generated wrapped, vertically smushed lettering as printable DOM text, accepted an ASCII `.tlf` upload and refused a `.tlf` with a non-ASCII glyph, naming the glyph and byte. Browser runtime errors: zero.
 
 ## Actual browser checks
 

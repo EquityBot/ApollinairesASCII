@@ -49,6 +49,13 @@ enum Align {
     Right,
 }
 #[derive(Clone, Copy, ValueEnum)]
+enum Layout {
+    Default,
+    Full,
+    Fitted,
+    Smush,
+}
+#[derive(Clone, Copy, ValueEnum)]
 enum Transform {
     Horizontal,
     Vertical,
@@ -74,12 +81,23 @@ enum Command {
         text: String,
         #[arg(long, default_value = "standard")]
         font: String,
+        /// Plain FIGlet .flf or TOIlet .tlf font drawn in printable ASCII.
         #[arg(long)]
         font_file: Option<PathBuf>,
         #[arg(long, value_enum, default_value = "left")]
         align: Align,
+        /// Canvas width for alignment.
         #[arg(long)]
         width: Option<usize>,
+        /// Break lines, at spaces where possible, to at most this many columns.
+        #[arg(long)]
+        wrap: Option<usize>,
+        /// How letters join: the font's default, full width, fitted (kerning) or smushed.
+        #[arg(long, value_enum, default_value = "default")]
+        horizontal: Layout,
+        /// How lines join: the font's default, full height, fitted or smushed.
+        #[arg(long, value_enum, default_value = "default")]
+        vertical: Layout,
     },
     /// Convert images or animated GIFs to text, from files or https:// URLs.
     Image {
@@ -250,19 +268,33 @@ fn run(args: Args) -> Result<()> {
             font_file,
             align,
             width,
+            wrap,
+            horizontal,
+            vertical,
         } => {
             let custom = font_file.as_ref().map(|p| read_text(p)).transpose()?;
-            let alignment = match align {
-                Align::Left => lettering::Alignment::Left,
-                Align::Center => lettering::Alignment::Center,
-                Align::Right => lettering::Alignment::Right,
+            let layout = |layout| match layout {
+                Layout::Default => lettering::Layout::Default,
+                Layout::Full => lettering::Layout::Full,
+                Layout::Fitted => lettering::Layout::Fitted,
+                Layout::Smush => lettering::Layout::Smush,
             };
-            Animation::still(lettering::render(
+            let options = lettering::Options {
+                alignment: match align {
+                    Align::Left => lettering::Alignment::Left,
+                    Align::Center => lettering::Alignment::Center,
+                    Align::Right => lettering::Alignment::Right,
+                },
+                width,
+                wrap,
+                horizontal: layout(horizontal),
+                vertical: layout(vertical),
+            };
+            Animation::still(lettering::render_with(
                 &text,
                 &font,
                 custom.as_deref(),
-                alignment,
-                width,
+                &options,
             )?)
         }
         Command::Image {

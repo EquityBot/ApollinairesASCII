@@ -25,7 +25,7 @@ Every frame contains bytes 32 through 126. Line feeds separate rows when saved a
 | Area | Included |
 | --- | --- |
 | Static art | 89 original pieces in 7 categories (animals, nature, objects, characters, borders and dividers, emoticons, banners), searchable by name or tag; blank canvases, character editing, borders, crops, flips and clipped composition |
-| Lettering | Standard, small, big, slant, block and outline styles; multiline text; alignment; plain FIGlet `.flf` import |
+| Lettering | 21 FIGlet and TOIlet fonts plus filled block and outline styles; font-default, full-width, fitted and smushed layout for letters and lines; word wrap; multiline text; alignment; validated ASCII-only `.flf` and `.tlf` import |
 | Animation | Ghost, rotating donut, wave, starfield, rain, fire, text reveal and scrolling text; deterministic seeds |
 | Text effects | Reveal, typewriter, decrypt, scatter, wipes in 4 directions, rain, wave and burn, applied to any art or lettering, forwards or in reverse; set duration, FPS and seed |
 | Media conversion | PNG, JPEG, GIF, WebP, BMP and PNM input; animated GIF timing; custom character ramps, aspect correction, transparency, inversion, gamma, contrast, dithering and edges; CLI batches and `https://` URLs |
@@ -59,6 +59,7 @@ cargo install --locked --git https://github.com/EquityBot/ApollinaireASCII
 apollinaire art ghost
 apollinaire list --tag bird
 apollinaire text "RUST" --font block
+apollinaire text "Hello there, friend" --font slant --wrap 40 --horizontal fitted
 apollinaire animate ghost --output ghost.json
 apollinaire text "HELLO" --font block | apollinaire effect decrypt - --output hello.json
 apollinaire play ghost.json
@@ -76,12 +77,7 @@ The library has no browser or CLI dependency when default features are disabled:
 ```toml
 [dependencies]
 apollinaires-ascii = { git = "https://github.com/EquityBot/ApollinaireASCII", default-features = false }
-
-[patch.crates-io]
-gif = { git = "https://github.com/image-rs/image-gif", rev = "e60e4dd7708cc50f9371185cefa04273f410f116" }
 ```
-
-Include the patch in your application's workspace root whilst the upstream GIF fix awaits a stable release. Cargo does not inherit a dependency's patch section. The CLI and browser builds in this repository already apply it. See [dependency notes](docs/DEPENDENCIES.md).
 
 ```rust
 use apollinaires_ascii::{Animation, Canvas, SceneOptions, animation};
