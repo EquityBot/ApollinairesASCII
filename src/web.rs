@@ -119,7 +119,7 @@ impl App {
         self.modified = true;
     }
     fn limit_history(&mut self) {
-        while self.undo.len() + self.redo.len() > 20
+        while self.undo.len() + self.redo.len() > 100
             || self
                 .undo
                 .iter()

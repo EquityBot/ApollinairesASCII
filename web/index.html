@@ -77,14 +77,17 @@
         </fieldset>
         <p id="tool-help" class="hint">Select text: drag across the artwork, then copy it.</p>
         <p class="hint">With the artwork focused, Ctrl+Z undoes and Ctrl+Y redoes every tool.</p>
-        <div class="tool-options">
+        <details id="tool-options" open>
+          <summary>Character, label and options</summary>
+          <div class="tool-options">
           <div><label for="brush">Character</label><input id="brush" type="text" value="#" maxlength="1" autocomplete="off" spellcheck="false"></div>
           <div><label for="stamp">Text and box label</label><input id="stamp" type="text" value="" maxlength="128" autocomplete="off" spellcheck="false"></div>
           <button id="stamp-text" type="button" disabled>Stamp text</button>
           <label class="check"><input id="diagram" type="checkbox"> Diagram mode: boxes and connectors</label>
           <label class="check"><input id="arrow" type="checkbox" checked> Arrowheads on connectors</label>
           <label class="check"><input id="onion-skin" type="checkbox"> Onion skin: show the previous frame</label>
-        </div>
+          </div>
+        </details>
         <div class="actions">
           <button id="area-copy" type="button" disabled>Copy area</button><button id="area-cut" type="button" disabled>Cut area</button><button id="area-paste" type="button" disabled>Paste at cursor</button><button id="area-clear" type="button" disabled>Clear area</button><button id="undo" type="button">Undo</button><button id="redo" type="button">Redo</button>
         </div>

@@ -468,7 +468,14 @@ fn pointer(event: Event) -> Result<()> {
                     .map_err(|_| "Cannot focus the artwork")?;
                 app.begin(point, Some(event.pointer_id()))?;
             }
-            "pointermove" if ours => app.extend(cell(app, &event)?)?,
+            "pointermove" if ours => {
+                // Redraw only when the pointer enters another cell.
+                let point = cell(app, &event)?;
+                if app.drawing.stroke.as_ref().is_some_and(|s| s.last == point) {
+                    return Ok(());
+                }
+                app.extend(point)?;
+            }
             "pointerup" if ours => {
                 app.extend(cell(app, &event)?)?;
                 app.finish()?;
@@ -616,6 +623,14 @@ fn button(id: &str) -> Result<()> {
 }
 
 pub(super) fn listen_all() -> std::result::Result<(), wasm_bindgen::JsValue> {
+    // Small screens start with the options folded so the grid sits just below the tools.
+    if web_sys::window()
+        .ok_or("Browser window")?
+        .match_media("(max-width: 760px)")?
+        .is_some_and(|query| query.matches())
+    {
+        node::<Element>("tool-options")?.remove_attribute("open")?;
+    }
     for name in [
         "pointerdown",
         "pointermove",
