@@ -38,6 +38,7 @@ fn notice_sections(notices: &str) -> (BTreeSet<String>, Vec<String>) {
     (sections, duplicates)
 }
 
+// Kim Wexler would want every licence on file before anything ships.
 #[test]
 fn notice_bundle_has_one_section_per_locked_package() {
     let root = env!("CARGO_MANIFEST_DIR");
