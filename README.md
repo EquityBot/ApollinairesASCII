@@ -9,13 +9,9 @@
 
 <div align="center">
 
-<div align="center">
-
 [![Checks and browser](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/checks.yml/badge.svg?branch=master)](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/checks.yml) [![Codecov](https://codecov.io/gh/EquityBot/ApollinaireASCII/graph/badge.svg)](https://codecov.io/gh/EquityBot/ApollinaireASCII) [![CodeQL](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/codeql.yml) [![Snyk](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/snyk.yml/badge.svg?branch=master)](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/snyk.yml) [![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=EquityBot_ApollinairesASCII&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=EquityBot_ApollinairesASCII)<br>
 [![OpenSSF Scorecard](https://raw.githubusercontent.com/ryanduguid/.github/badges/EquityBot/ApollinaireASCII.svg)](https://scorecard.dev/viewer/?uri=github.com/EquityBot/ApollinaireASCII)<br>
 [![release](https://badgen.net/github/release/EquityBot/ApollinaireASCII/stable?label=release&color=66023C&labelColor=000000)](https://github.com/EquityBot/ApollinaireASCII/releases/latest) [![crates.io](https://badgen.net/crates/v/apollinaire-ascii?label=crates.io&color=66023C&labelColor=000000)](https://crates.io/crates/apollinaire-ascii) [![rust: 1.99+](.github/assets/badges/rust.svg)](https://www.rust-lang.org/) [![Licence: MIT](.github/assets/badges/licence.svg)](LICENSE.md) [![Editor: in browser](.github/assets/badges/editor.svg)](https://equitybot.github.io/ApollinaireASCII/)
-
-</div>
 
 [What it does](#what-it-does) · [Run the CLI](#run-the-cli) · [Use the library](#use-the-library) · [Browser editor](#build-the-browser-editor) · [Alternatives](#when-to-choose-something-else) · [Licence](#foundation-and-licence)
 
