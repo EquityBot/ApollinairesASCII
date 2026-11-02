@@ -144,9 +144,11 @@ The integration tests cover the ASCII contract, whitespace, drawing, all bundled
 
 ## When to choose something else
 
-ApollinaireASCII keeps every output to printable ASCII and shares one Rust core between the CLI, library and browser editor. Projects compared in [the research notes](docs/RESEARCH.md) suit other needs better:
+ApollinaireASCII keeps every output to printable ASCII and shares one Rust core between the CLI, library and browser editor. These projects suit other needs better; [the research notes](docs/RESEARCH.md) compare most of them:
 
 - Colour, ANSI, Unicode or CP437 art: [durdraw](https://github.com/durdraw/durdraw), [chafa](https://github.com/hpjansson/chafa) or [libcaca](https://github.com/cacalabs/libcaca).
+- Banner lettering alone: [FIGlet](http://www.figlet.org/), whose font format ApollinaireASCII reads.
+- Diagrams alone: [ASCIIFlow](https://github.com/lewish/asciiflow) in a browser or [ASCII Draw](https://github.com/Nokse22/ascii-draw) on the GNOME desktop.
 - Image conversion alone: [artem](https://github.com/FineFindus/artem) (Rust) or [ascii-image-converter](https://github.com/TheZoraiz/ascii-image-converter) (Go).
 - Terminal animation and effects in Python: [asciimatics](https://github.com/peterbrittain/asciimatics) or [terminaltexteffects](https://github.com/ChrisBuilds/terminaltexteffects).
 - Video playback in a terminal through FFmpeg: [tplay](https://github.com/maxcurzi/tplay).
