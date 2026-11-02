@@ -1,0 +1,36 @@
+[package]
+name = "apollinaire-ascii-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+apollinaire-ascii = { path = "..", default-features = false }
+libfuzzer-sys = "0.4.12"
+
+# Keep the fuzz crate out of any parent workspace.
+[workspace]
+
+[[bin]]
+name = "decode_media"
+path = "fuzz_targets/decode_media.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "font"
+path = "fuzz_targets/font.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "project_json"
+path = "fuzz_targets/project_json.rs"
+test = false
+doc = false
+bench = false
