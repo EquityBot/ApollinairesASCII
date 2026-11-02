@@ -21,3 +21,5 @@ cargo test-editor
 ```
 
 New features and bug fixes come with tests in `tests/` or a `#[cfg(test)]` module. Editor changes come with a case in `src/web/tests.rs`, driven by pointer and keyboard as a user would; `cargo test-editor` runs them, and the README lists what they need. Check layout and anything the suite cannot reach, such as the system clipboard, by hand in a served `web/`. CI runs the native checks on Linux and Windows, runs the editor tests in headless Chrome and builds the editor.
+
+Changes to image, GIF, font or project-file parsing should also survive the fuzz targets in `fuzz/`, which CI runs for 5 minutes each every Monday. They need a nightly toolchain and `cargo install cargo-fuzz`; run one with `cargo +nightly fuzz run decode_media` (or `font`, `project_json`). A crash leaves its input in `fuzz/artifacts/`; turn it into a test before fixing it.
