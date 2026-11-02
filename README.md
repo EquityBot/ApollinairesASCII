@@ -1,6 +1,19 @@
-# ApollinaireASCII
+<p align="center">
+  <picture>
+    <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset=".github/assets/banner-phone-light.svg">
+    <source media="(max-width: 600px)" srcset=".github/assets/banner-phone.svg">
+    <source media="(prefers-color-scheme: light)" srcset=".github/assets/banner-light.svg">
+    <img src=".github/assets/banner.svg" width="100%" alt="ApollinaireASCII: Static art, lettering and animation in real ASCII text. Pixel art of a block letter A over a crimson cursor beside the ApollinaireASCII wordmark in slab-serif block letters.">
+  </picture>
+</p>
+
+<div align="center">
 
 [![Checks and browser](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/checks.yml/badge.svg)](https://github.com/EquityBot/ApollinaireASCII/actions/workflows/checks.yml) [![Licence: MIT](.github/assets/badges/licence.svg)](LICENSE.md) [![Editor: in browser](.github/assets/badges/editor.svg)](https://equitybot.github.io/ApollinaireASCII/)
+
+[What it does](#what-it-does) · [Run the CLI](#run-the-cli) · [Use the library](#use-the-library) · [Browser editor](#build-the-browser-editor) · [Alternatives](#when-to-choose-something-else) · [Licence](#foundation-and-licence)
+
+</div>
 
 ![A ghost drawn in # and : characters floats up and down](docs/media/ghost.gif)
 
@@ -110,7 +123,9 @@ wasm-bindgen target/wasm32-unknown-unknown/release/apollinaire_ascii.wasm --targ
 
 Serve `web/` with a local HTTP server and open its URL. Opening `index.html` directly as a `file:` URL cannot load its WebAssembly module. GitHub Actions builds and deploys the same directory to GitHub Pages.
 
-The editor processes files in your browser. It has no upload endpoint, account system, analytics or external font request. The camera is requested only when you choose Camera on, and every camera track stops when you turn it off, finish a recording or hide or leave the page. Camera frames are never sent over the network. The library and editor make no network requests; only the CLI downloads, and only an `https://` image URL you pass to `apollinaire image`. Playback starts paused when reduced motion is requested and pauses when the page is hidden. Save JSON to keep all frames and their timings; text export saves the selected frame.
+The editor processes files in your browser. It has no upload endpoint, account system, analytics or external font request. The camera is requested only when you choose Camera on, and every camera track stops when you turn it off, finish a recording or hide or leave the page. Camera frames are never sent over the network. The library and editor make no network requests; only the CLI downloads, and only an `https://` image URL you pass to `apollinaire image`.
+
+Playback starts paused when reduced motion is requested and pauses when the page is hidden. Save JSON to keep all frames and their timings; text export saves the selected frame.
 
 ## Checks
 
@@ -125,12 +140,23 @@ cargo test-editor
 
 The integration tests cover the ASCII contract, whitespace, drawing, all bundled styles, scenes, effects and catalogue pieces, timing, round trips, malformed fonts, GIF preflight checks, video and camera frame sampling and timing, resource limits, script-safe HTML, CLI file handling and batch output, and URL limits against a local test server. `cargo test-editor` runs the editor tests in `src/web/tests.rs` in a headless browser. They embed the page markup and stylesheet, start the editor and drive it through pointer, keyboard, clipboard and form events: each drawing tool by pointer and by keyboard, diagram joins, onion skin, undo and redo, file opening, frame editing, effects and catalogue search, with every read of the artwork checked as printable ASCII. They need `wasm-bindgen-test-runner` from the pinned `wasm-bindgen-cli` 0.2.130 and `CHROMEDRIVER` set to a chromedriver matching an installed Chrome or Chromium. CI runs the native checks on Linux and Windows, runs the editor tests in headless Chrome on Linux and builds the browser module. See [validation](docs/VALIDATION.md) for the browser checks and known limits.
 
+## When to choose something else
+
+ApollinaireASCII keeps every output to printable ASCII and shares one Rust core between the CLI, library and browser editor. Projects compared in [the research notes](docs/RESEARCH.md) suit other needs better:
+
+- Colour, ANSI, Unicode or CP437 art: [durdraw](https://github.com/durdraw/durdraw), [chafa](https://github.com/hpjansson/chafa) or [libcaca](https://github.com/cacalabs/libcaca).
+- Image conversion alone: [artem](https://github.com/FineFindus/artem) (Rust) or [ascii-image-converter](https://github.com/TheZoraiz/ascii-image-converter) (Go).
+- Terminal animation and effects in Python: [asciimatics](https://github.com/peterbrittain/asciimatics) or [terminaltexteffects](https://github.com/ChrisBuilds/terminaltexteffects).
+- Video playback in a terminal through FFmpeg: [tplay](https://github.com/maxcurzi/tplay).
+
 ## Foundation and licence
 
-ApollinaireASCII retains the history of [orhnk/RASCII](https://github.com/orhnk/RASCII), starting at `8d33a3670e51298d530ab202090b212501310cdd`. Its MIT image-conversion approach is the foundation of the converter. The shared frame model, drawing, scenes, project format, editor and exporters are new Rust code. It is an evolution of a focused converter, not a claim that upstream supplied this whole toolkit.
+ApollinaireASCII retains the history of [orhnk/RASCII](https://github.com/orhnk/RASCII), starting at `8d33a3670e51298d530ab202090b212501310cdd`. Its MIT image-conversion approach is the foundation of the converter. The shared frame model, drawing, scenes, project format, editor and exporters are new Rust code.
 
 [Research](docs/RESEARCH.md) records 1,164 discovered repositories across 27 multilingual searches, the shortlist and why this foundation was selected. Discovery metadata is not a source audit of every result. No Ghostty animation artwork was copied.
 
-MIT for this repository's code. Preserve the [licence](LICENSE.md) and [third-party notices](THIRD_PARTY_NOTICES.md). Dependencies and bundled font data retain their own licences and notices.
+MIT for this repository's code. Preserve the [licence](LICENSE.md) and [third-party notices](THIRD_PARTY_NOTICES.md). Dependencies and bundled font data retain their own licences and notices. The banner's lettering and emblem are drawn from Cascadia Mono and Besley glyphs (SIL OFL 1.1).
 
-Hello, friend. Keep it in characters.
+---
+
+<p align="center"><sub>Hello, friend. Keep it in characters.<br>Made by <a href="https://github.com/EquityBot">EquityBot</a>. <i>Ad gloriam eius, non meam.</i></sub></p>
